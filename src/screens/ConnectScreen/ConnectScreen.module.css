@@ -1,0 +1,130 @@
+.connectScreen {
+  width: 100%;
+  min-height: 100vh;
+  height: auto;
+  display: flex;
+  color: #FDF7F0;
+  background: linear-gradient(180deg, #2d6759 30%, #0f7a60 100%);
+  padding: 32px 54px;
+  box-sizing: border-box;
+}
+
+.leftSection {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  padding-right: 20px;
+}
+
+.keeperLogo {
+  width: 102px;
+  height: 44px;
+}
+
+.title {
+  margin-top: 38px;
+  max-width: 500px;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.instructionsContainer {
+  margin-top: 50px;
+  max-width: 500px;
+}
+
+.instructionsTitle {
+  font-size: 18px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.instructionsIcon {
+  width: 19px;
+  height: 22px;
+  margin-right: 10px;
+}
+
+.instructionsList {
+  padding-left: 20px;
+  font-size: 15px;
+  font-weight: 200;
+  line-height: 20px;
+}
+
+.instructionsList li {
+  margin-bottom: 20px;
+}
+
+.note {
+  margin-top: auto;
+  padding-top: 30px;
+  width: 90%;
+}
+
+.note h4 {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.note p {
+  font-size: 14px;
+  font-weight: 200;
+  line-height: 18px;
+}
+
+.qrContainer {
+  width: 45%;
+  background-color: #FDF7F0;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #2d6759;
+  margin-top: 35px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.qrCode {
+  width: 250px;
+  height: 250px;
+  background-color: #2d6759;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-top: 50px;
+}
+
+.scanMe {
+  font-size: 18px;
+  font-weight: 600;
+  color: #FDF7F0;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.qrNote {
+  max-width: 250px;
+  color: var(--Secondary-Caption, #878787);
+  text-align: center;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 200;
+  line-height: 20px; 
+}
+
+.qrImage {
+  width: 200px;
+  height: 200px;
+  margin-top: 20px;
+}

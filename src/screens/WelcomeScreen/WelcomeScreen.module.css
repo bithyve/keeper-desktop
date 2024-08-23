@@ -1,0 +1,61 @@
+.welcomeScreen {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  color: #fff6de;
+  background: linear-gradient(180deg, #2d6759 30%, #0f7a60 100%);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 500px;
+}
+
+.keeperLogo {
+  width: 310px;
+  height: 132px;
+  margin-bottom: 19px;
+}
+
+.tagline {
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 200;
+  line-height: normal;
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.footer {
+  position: absolute;
+  bottom: 35px;
+  font-size: 16px;
+  text-align: center;
+  font-weight: 100;
+}
+
+.bithyveSymbol {
+  margin-left: 10px;
+}
+
+.bithyveLogo {
+  height: 24px;
+  margin-right: 5px;
+  vertical-align: middle;
+  display: inline-block;
+  vertical-align: middle;
+  margin-bottom: 4px;
+}
+
+.hyve {
+  font-weight: bold;
+}

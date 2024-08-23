@@ -1,0 +1,30 @@
+[package]
+name = "keeper-desktop"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1", features = [] }
+
+[dependencies]
+tauri = { version = "1", features = [ "http-all", "shell-open"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10.6"
+rand = "0.8.5"
+aes = "0.7.5"
+block-modes = "0.8.1"
+rust_socketio = "0.6.0"
+hex = "0.4.3"
+log = "0.4"
+thiserror = "1.0"
+env_logger = "0.10"
+
+
+[features]
+# This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

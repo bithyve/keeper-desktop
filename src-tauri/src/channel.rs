@@ -10,6 +10,7 @@ use rand::Rng;
 use hex;
 use log::{info, error, warn};
 use thiserror::Error;
+use std::ops::Drop;
 
 type Aes256Cbc = Cbc<Aes256, Pkcs7>;
 
@@ -165,5 +166,13 @@ impl Channel {
         let decrypted_string = String::from_utf8(decrypted_data)?;
 
         serde_json::from_str(&decrypted_string).map_err(ChannelError::from)
+    }
+}
+
+impl Drop for Channel {
+    fn drop(&mut self) {
+        if let Err(e) = self.disconnect() {
+            error!("Error disconnecting channel on drop: {}", e);
+        }
     }
 }

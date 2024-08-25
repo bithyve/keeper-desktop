@@ -5,9 +5,11 @@ import instructionsIcon from "../../assets/instructions-icon.svg";
 import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
 import { listen } from '@tauri-apps/api/event';
+import { useNavigate } from "react-router-dom";
 import QRCode from 'qrcode.react';
 
 const ConnectScreen = () => {
+  const navigate = useNavigate();
   const [qrData, setQrData] = useState('');
 
   useEffect(() => {
@@ -24,7 +26,7 @@ const ConnectScreen = () => {
       if (event === 'SET_NETWORK' && data[0].network) {
         const network = data[0].network === 'TESTNET' ? 'TESTNET' : 'MAINNET';
         console.log(`Network set to: ${network}`);
-        // TODO: Implement navigation to home screen with network type
+        navigate('/home', { replace: true });
       }
     });
 

@@ -1,0 +1,254 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.homeScreen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(180deg, #2D6759 36%, #0F7A60 100%);
+  overflow: hidden; /* Prevents scrolling on the body */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #2D6759;
+  flex-shrink: 0; /* Prevents header from shrinking */
+}
+
+.logo {
+  height: 31px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  font-weight: 100;
+  cursor: pointer;
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto; /* Enables vertical scrolling */
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: #F2EDE6;
+}
+
+.mainContent {
+  background: #F7F2EC;
+  border-radius: 4px;
+  border: 1px solid #D4D4D4;
+  background: #F7F2EC;
+  box-shadow: 0px 2px 7px 1px rgba(139, 139, 139, 0.15);
+  padding: 24px;
+  width: 95%;
+  max-width: 1200px;
+  margin-top: 20px;
+}
+
+.backLink {
+  text-decoration: none;
+  color: #2D6759;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.btcFeeRates, .deviceConnect {
+  border-radius: 5px;
+  border: 1px solid #D4D4D4;
+  background: #F7F2EC;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.btcFeeRates h2, .deviceConnect h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #000;
+}
+
+.btcFeeRates {
+  display: flex;
+  flex-direction: column;
+}
+
+.rateContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.rateInfo {
+  display: flex;
+  align-items: center;
+}
+
+.rateIndicator {
+  background-color: #F22700;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.triangle {
+  color: white;
+  font-size: 8px;
+}
+
+.rateValues {
+  display: flex;
+  flex-direction: column;
+}
+
+.rateValue {
+  font-size: 18px;
+  font-weight: bold;
+  color: #000;
+  line-height: 1;
+}
+
+.rateUnit {
+  font-size: 12px;
+  font-weight: 400;
+  color: #3E524D;
+  font-feature-settings: 'liga' off, 'clig' off;
+}
+
+.chartPlaceholder {
+  width: 60%;
+  height: 60px;
+  background-color: #E0E0E0;
+  border-radius: 8px;
+  margin: 15px 0;
+}
+
+.rateFooter {
+  display: flex;
+  justify-content: space-between;
+  color: #000;
+  align-items: center;
+  border-top: 1px solid #E0E0E0;
+  padding-top: 15px;
+}
+
+.weekAverage {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background-color: #2D6759;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.weekAverageValue {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btcValue {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+}
+
+.bitcoinIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+}
+
+.deviceConnect h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.deviceConnect p {
+  font-size: 14px;
+  color: #878787;
+  margin-bottom: 20px;
+}
+
+.deviceList {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.refreshButton {
+  background-color: #2D6759;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.refreshButton:hover {
+  background-color: #1F4D3F;
+  transform: translateY(-2px);
+}
+
+.refreshIcon {
+  margin-right: 5px;
+  transition: transform 0.3s ease;
+}
+
+.refreshButton:hover .refreshIcon {
+  transform: rotate(180deg);
+}
+
+.noDevices {
+  background-color: #fdf7f0;
+  border: 1px solid #d4d4d4;
+  border-radius: 7px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 320px;
+  height: 126px;
+  color: #000;
+}
+
+.noDevices h3 {
+  font-size: 16px;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.noDevices p {
+  font-size: 14px;
+  color: #878787;
+  margin-bottom: 20px;
+}

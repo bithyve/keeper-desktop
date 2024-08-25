@@ -4,35 +4,37 @@
 mod channel;
 use channel::Channel;
 use tauri::{State, Manager};
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use serde_json::Value;
 
-struct ChannelState {
-    channel: Arc<Mutex<Channel>>,
+struct AppStateInner {
+    channel: Channel,
+}
+
+type AppState = Mutex<AppStateInner>;
+
+#[tauri::command]
+fn emit_event(state: State<'_, AppState>, event: String, data: Value, skip_encryption: bool) -> Result<(), String> {
+    let state = state.lock().map_err(|e| e.to_string())?;
+    state.channel.emit(&event, data, skip_encryption).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn emit_event(state: State<'_, ChannelState>, event: String, data: Value, skip_encryption: bool) -> Result<(), String> {
-    let channel = state.channel.lock().map_err(|e| e.to_string())?;
-    channel.emit(&event, data, skip_encryption).map_err(|e| e.to_string())
+fn disconnect_channel(state: State<'_, AppState>) -> Result<(), String> {
+    let state = state.lock().map_err(|e| e.to_string())?;
+    state.channel.disconnect().map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn disconnect_channel(state: State<'_, ChannelState>) -> Result<(), String> {
-    let channel = state.channel.lock().map_err(|e| e.to_string())?;
-    channel.disconnect().map_err(|e| e.to_string())
+fn get_channel_secret(state: State<'_, AppState>) -> Result<String, String> {
+    let state = state.lock().map_err(|e| e.to_string())?;
+    Ok(state.channel.encryption_key.clone().unwrap_or_default())
 }
 
 #[tauri::command]
-fn get_channel_secret(state: State<'_, ChannelState>) -> Result<String, String> {
-    let channel = state.channel.lock().map_err(|e| e.to_string())?;
-    Ok(channel.encryption_key.clone().unwrap_or_default())
-}
-
-#[tauri::command]
-fn generate_encryption_key(state: State<'_, ChannelState>) -> Result<String, String> {
-    let mut channel = state.channel.lock().map_err(|e| e.to_string())?;
-    channel.generate_encryption_key().map_err(|e| e.to_string())
+fn generate_encryption_key(state: State<'_, AppState>) -> Result<String, String> {
+    let mut state = state.lock().map_err(|e| e.to_string())?;
+    state.channel.generate_encryption_key().map_err(|e| e.to_string())
 }
 
 fn main() {
@@ -40,10 +42,10 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             let channel = Channel::new(app.handle());
-            let channel_state = ChannelState {
-                channel: Arc::new(Mutex::new(channel)),
+            let app_state = AppStateInner {
+                channel: channel,
             };
-            app.manage(channel_state);
+            app.manage(Mutex::new(app_state));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

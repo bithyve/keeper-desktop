@@ -1,8 +1,6 @@
-// src-tauri/src/channel.rs
 use rust_socketio::{ClientBuilder, Payload, Event};
 use rust_socketio::client::Client;
 use serde_json::json;
-use std::sync::{Arc, Mutex};
 use aes::Aes256;
 use block_modes::{BlockMode, Cbc};
 use block_modes::block_padding::Pkcs7;
@@ -46,7 +44,7 @@ pub enum ChannelError {
 }
 
 pub struct Channel {
-    pub client: Option<Arc<Mutex<Client>>>,
+    pub client: Option<Client>,
     pub room: Option<String>,
     pub encryption_key: Option<String>,
 }
@@ -75,7 +73,7 @@ impl Channel {
             .connect();
         
         Channel {
-            client: client.ok().map(|c| Arc::new(Mutex::new(c))),
+            client: client.ok(),
             room: None,
             encryption_key: None,
         }
@@ -84,7 +82,6 @@ impl Channel {
     /// Disconnects the Socket.IO client
     pub fn disconnect(&self) -> Result<(), ChannelError> {
         if let Some(client) = &self.client {
-            let client = client.lock().unwrap();
             client.disconnect().map_err(|e| ChannelError::SocketIoError(e.to_string()))?;
         }
         Ok(())
@@ -102,7 +99,6 @@ impl Channel {
 
         if let Some(room) = &self.room {
             if let Some(client) = &self.client {
-                let client = client.lock().unwrap();
                 client.emit(event, json!({"room": room, "data": encrypted}))
                     .map_err(|e| ChannelError::SocketIoError(e.to_string()))?;
                 Ok(())

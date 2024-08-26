@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "keeper-desktop",
+    "productName": "Keeper Desktop",
     "version": "0.1.0"
   },
   "tauri": {

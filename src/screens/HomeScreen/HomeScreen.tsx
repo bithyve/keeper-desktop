@@ -28,6 +28,8 @@ const HomeScreen = () => {
   } = useQuery<HWIDevice[], Error>({
     queryKey: ["hwiDevices"],
     queryFn: hwiService.fetchDevices,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   const isLoadingDevices = isLoading || isFetching;

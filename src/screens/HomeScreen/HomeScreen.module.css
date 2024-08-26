@@ -12,7 +12,7 @@ html {
   flex-direction: column;
   height: 100vh;
   background: linear-gradient(180deg, #2d6759 36%, #0f7a60 100%);
-  overflow: hidden; /* Prevents scrolling on the body */
+  overflow: hidden;
 }
 
 .header {
@@ -21,7 +21,7 @@ html {
   align-items: center;
   padding: 10px 20px;
   background-color: #2d6759;
-  flex-shrink: 0; /* Prevents header from shrinking */
+  flex-shrink: 0;
 }
 
 .logo {
@@ -63,7 +63,7 @@ html {
   text-decoration: none;
   color: #2d6759;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 16px;
   display: inline-block;
 }
@@ -73,8 +73,12 @@ html {
   border-radius: 5px;
   border: 1px solid #d4d4d4;
   background: #f7f2ec;
-  padding: 12px;
+  padding: 12px 18px;
   margin-bottom: 12px;
+}
+
+.deviceConnect {
+  padding: 12px 29px;
 }
 
 .btcFeeRates h2,
@@ -179,8 +183,8 @@ html {
 }
 
 .bitcoinIcon {
-  width: 16px;
-  height: 16px;
+  width: 21px;
+  height: 24px;
   margin-right: 5px;
 }
 

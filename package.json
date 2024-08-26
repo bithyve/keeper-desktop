@@ -10,6 +10,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.52.1",
     "@tauri-apps/api": "^1",
     "@types/styled-components": "^5.1.34",
     "qrcode.react": "^3.1.0",

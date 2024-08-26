@@ -1,4 +1,5 @@
-body, html {
+body,
+html {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -10,7 +11,7 @@ body, html {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: linear-gradient(180deg, #2D6759 36%, #0F7A60 100%);
+  background: linear-gradient(180deg, #2d6759 36%, #0f7a60 100%);
   overflow: hidden; /* Prevents scrolling on the body */
 }
 
@@ -19,7 +20,7 @@ body, html {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: #2D6759;
+  background-color: #2d6759;
   flex-shrink: 0; /* Prevents header from shrinking */
 }
 
@@ -31,7 +32,7 @@ body, html {
   background: none;
   border: none;
   color: white;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 100;
   cursor: pointer;
 }
@@ -39,45 +40,47 @@ body, html {
 .main {
   flex: 1;
   overflow-y: auto; /* Enables vertical scrolling */
-  padding: 20px;
+  padding: 10px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  background: #F2EDE6;
+  background: #f2ede6;
 }
 
 .mainContent {
-  background: #F7F2EC;
+  background: #f7f2ec;
   border-radius: 4px;
-  border: 1px solid #D4D4D4;
-  background: #F7F2EC;
+  border: 1px solid #d4d4d4;
+  background: #f7f2ec;
   box-shadow: 0px 2px 7px 1px rgba(139, 139, 139, 0.15);
-  padding: 24px;
+  padding: 12px;
   width: 95%;
   max-width: 1200px;
-  margin-top: 20px;
+  margin-top: 8px;
 }
 
 .backLink {
   text-decoration: none;
-  color: #2D6759;
-  font-size: 14px;
+  color: #2d6759;
+  font-size: 13px;
   font-weight: 500;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   display: inline-block;
 }
 
-.btcFeeRates, .deviceConnect {
+.btcFeeRates,
+.deviceConnect {
   border-radius: 5px;
-  border: 1px solid #D4D4D4;
-  background: #F7F2EC;
-  padding: 20px;
-  margin-bottom: 24px;
+  border: 1px solid #d4d4d4;
+  background: #f7f2ec;
+  padding: 12px;
+  margin-bottom: 12px;
 }
 
-.btcFeeRates h2, .deviceConnect h2 {
+.btcFeeRates h2,
+.deviceConnect h2 {
   font-size: 18px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   color: #000;
 }
 
@@ -99,7 +102,7 @@ body, html {
 }
 
 .rateIndicator {
-  background-color: #F22700;
+  background-color: #f22700;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -127,18 +130,18 @@ body, html {
 }
 
 .rateUnit {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
-  color: #3E524D;
-  font-feature-settings: 'liga' off, 'clig' off;
+  color: #3e524d;
+  font-feature-settings: "liga" off, "clig" off;
 }
 
 .chartPlaceholder {
   width: 60%;
-  height: 60px;
-  background-color: #E0E0E0;
+  height: 45px;
+  background-color: #e0e0e0;
   border-radius: 8px;
-  margin: 15px 0;
+  margin: 10px 0;
 }
 
 .rateFooter {
@@ -146,8 +149,8 @@ body, html {
   justify-content: space-between;
   color: #000;
   align-items: center;
-  border-top: 1px solid #E0E0E0;
-  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 10px;
 }
 
 .weekAverage {
@@ -159,18 +162,18 @@ body, html {
 .dot {
   width: 8px;
   height: 8px;
-  background-color: #2D6759;
+  background-color: #2d6759;
   border-radius: 50%;
   margin-right: 8px;
 }
 
 .weekAverageValue {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .btcValue {
-  font-size: 13px;
+  font-size: 12px;
   display: flex;
   align-items: center;
 }
@@ -188,9 +191,9 @@ body, html {
 }
 
 .deviceConnect p {
-  font-size: 14px;
+  font-size: 13px;
   color: #878787;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .deviceList {
@@ -200,13 +203,13 @@ body, html {
 }
 
 .refreshButton {
-  background-color: #2D6759;
+  background-color: #2d6759;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 9px 16px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -215,7 +218,7 @@ body, html {
 }
 
 .refreshButton:hover {
-  background-color: #1F4D3F;
+  background-color: #1f4d3f;
   transform: translateY(-2px);
 }
 
@@ -232,23 +235,26 @@ body, html {
   background-color: #fdf7f0;
   border: 1px solid #d4d4d4;
   border-radius: 7px;
-  padding: 15px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  width: 320px;
-  height: 126px;
+  width: 280px;
   color: #000;
 }
 
 .noDevices h3 {
-  font-size: 16px;
+  font-size: 15px;
   margin-bottom: 5px;
   color: #333;
 }
 
 .noDevices p {
-  font-size: 14px;
+  font-size: 13px;
   color: #878787;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+}
+
+.noDevices ExpandableError {
+  margin-top: 15px;
 }

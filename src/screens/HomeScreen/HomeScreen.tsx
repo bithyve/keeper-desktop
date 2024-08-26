@@ -1,28 +1,36 @@
-import { useState, useEffect } from 'react';
-import { invoke } from '@tauri-apps/api/tauri';
-import styles from './HomeScreen.module.css';
-import keeperLogo from '../../assets/keeper-logo.png';
-import bitcoinIcon from '../../assets/bitcoin-icon.svg';
-import DeviceItem from '../../components/DeviceItem/DeviceItem';
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Device } from '../../helpers/devices';
+import styles from "./HomeScreen.module.css";
+import keeperLogo from "../../assets/keeper-logo.png";
+import bitcoinIcon from "../../assets/bitcoin-icon.svg";
+import { HWIDevice } from "../../helpers/devices";
+import DeviceItem from "../../components/DeviceItem/DeviceItem";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import ExpandableError from "../../components/ExpandableError/ExpandableError";
+import hwiService from "../../services/hwiService";
 
+const formatErrorMessage = (error: Error): string => {
+  if (error.toString().includes("HWI error:")) {
+    const hwiErrorMessage = error.toString().split("HWI error:")[1].trim();
+    return hwiErrorMessage.replace(/, \(None\)$/, "");
+  }
+  return error.toString();
+};
 
 const HomeScreen = () => {
-  const [devices, setDevices] = useState<Device[]>([]);
+  const {
+    data: devices,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch: refetchDevices,
+  } = useQuery<HWIDevice[], Error>({
+    queryKey: ["hwiDevices"],
+    queryFn: hwiService.fetchDevices,
+  });
 
-  useEffect(() => {
-    fetchDevices();
-  }, []);
-
-  const fetchDevices = async () => {
-    try {
-      const fetchedDevices = await invoke<Device[]>('get_devices');
-      setDevices(fetchedDevices);
-    } catch (error) {
-      console.error('Failed to fetch devices:', error);
-    }
-  };
+  const isLoadingDevices = isLoading || isFetching;
 
   return (
     <div className={styles.homeScreen}>
@@ -70,17 +78,38 @@ const HomeScreen = () => {
             <h2>Pick or Connect your Device</h2>
             <p>You can create a wallet using any hardware key</p>
             <div className={styles.deviceList}>
-              {devices.map((device) => (
-                <DeviceItem key={device.xfp} device={device} />
-              ))}
-              {devices.length === 0 && (
+              {isLoadingDevices && <LoadingSpinner />}
+              {!isLoadingDevices && isError && (
                 <div className={styles.noDevices}>
-                  <h3>No devices found...</h3>
-                  <p>Please connect your device click on Refresh.</p>
+                  <h3>Error Occurred</h3>
+                  <br />
+                  <ExpandableError message={formatErrorMessage(error)} />
+                  <p>
+                    Please try again or contact support if the issue persists.
+                  </p>
                 </div>
               )}
+              {!isLoadingDevices &&
+                !isError &&
+                devices &&
+                devices.length === 0 && (
+                  <div className={styles.noDevices}>
+                    <h3>No devices found</h3>
+                    <p>Please connect your device and click on Refresh.</p>
+                  </div>
+                )}
+              {!isLoadingDevices &&
+                !isError &&
+                devices &&
+                devices.map((device) => (
+                  <DeviceItem key={device.fingerprint} device={device} />
+                ))}
             </div>
-            <button className={styles.refreshButton} onClick={fetchDevices}>
+            <button
+              className={styles.refreshButton}
+              onClick={() => refetchDevices()}
+              disabled={isLoadingDevices}
+            >
               <span className={styles.refreshIcon}>↻</span> Refresh
             </button>
           </section>

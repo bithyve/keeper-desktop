@@ -4,19 +4,17 @@
 mod channel;
 mod device;
 mod hwi;
-use bitcoin::Network;
 use channel::Channel;
 use device::get_xpub;
 use hwi::interface::HWIClient;
 use hwi::types::HWIDevice;
-use log::info;
 use serde_json::Value;
-use std::path::Path;
 use std::sync::Mutex;
 use tauri::{Manager, State};
+
 struct AppStateInner {
     channel: Channel,
-    hwi: Option<HWIClient>,
+    hwi: HWIClient,
 }
 
 type AppState = Mutex<AppStateInner>;
@@ -47,18 +45,10 @@ fn generate_encryption_key(state: State<'_, AppState>) -> Result<String, String>
 // ==================== HWI Commands ====================
 
 #[tauri::command]
-fn is_hwi_available(state: State<'_, AppState>) -> Result<bool, String> {
-    let state = state.lock().map_err(|e| e.to_string())?;
-    Ok(state.hwi.is_some())
-}
-
-#[tauri::command]
 async fn hwi_enumerate(state: State<'_, AppState>) -> Result<Vec<HWIDevice>, String> {
     let state = state.lock().map_err(|e| e.to_string())?;
     state
         .hwi
-        .as_ref()
-        .ok_or("HWI client not available".to_string())?
         .enumerate()
         // TODO: handle devices with error
         .map(|devices| devices.into_iter().filter_map(Result::ok).collect())
@@ -72,35 +62,23 @@ fn set_device_info(
     device_type: String,
 ) -> Result<(), String> {
     let mut state = state.lock().map_err(|e| e.to_string())?;
-    let hwi = state
-        .hwi
-        .as_mut()
-        .ok_or("HWI client not available".to_string())?;
-    hwi.set_device_info(fingerprint, device_type);
+    state.hwi.set_device_info(fingerprint, device_type);
     Ok(())
 }
 
 #[tauri::command]
 fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
-    let hwi = state
-        .hwi
-        .as_ref()
-        .ok_or("HWI client not available".to_string())?;
-    let xpub_data = get_xpub(hwi, hwi.network).map_err(|e| e.to_string())?;
-    let device_type = hwi.device_type.as_ref().unwrap().as_str();
+    let xpub_data = get_xpub(&state.hwi, state.hwi.network).map_err(|e| e.to_string())?;
+    let device_type = state.hwi.device_type.as_ref().unwrap().as_str();
     emit_device_operation(&state.channel, "SETUP", device_type, xpub_data)
 }
 
 #[tauri::command]
 fn device_healthcheck(state: State<'_, AppState>) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
-    let hwi = state
-        .hwi
-        .as_ref()
-        .ok_or("HWI client not available".to_string())?;
-    let xpub_data = get_xpub(hwi, hwi.network).map_err(|e| e.to_string())?;
-    let device_type = hwi.device_type.as_ref().unwrap().as_str();
+    let xpub_data = get_xpub(&state.hwi, state.hwi.network).map_err(|e| e.to_string())?;
+    let device_type = state.hwi.device_type.as_ref().unwrap().as_str();
     emit_device_operation(&state.channel, "HEALTHCHECK", device_type, xpub_data)
 }
 
@@ -133,11 +111,7 @@ fn main() {
 
                             if let Some(network) = network {
                                 if let Ok(mut state) = channel_handle.state::<AppState>().try_lock() {
-                                    if let Some(hwi) = &mut state.hwi {
-                                        hwi.set_network(network);
-                                    } else {
-                                        log::warn!("HWI client not available");
-                                    }
+                                    state.hwi.set_network(network);
                                 } else {
                                     log::error!("Failed to acquire lock on AppState");
                                 }
@@ -149,7 +123,7 @@ fn main() {
             });
             let channel = Channel::new(app.handle());
             // TODO: For Linux we might need to install udev rules here or with a command for the interface.
-            let hwi = get_hwi(app.handle());
+            let hwi = HWIClient::new(true);
             let app_state = AppStateInner { channel, hwi };
             app.manage(Mutex::new(app_state));
             Ok(())
@@ -158,7 +132,6 @@ fn main() {
             disconnect_channel,
             get_channel_secret,
             generate_encryption_key,
-            is_hwi_available,
             hwi_enumerate,
             set_device_info,
             share_xpubs,
@@ -166,21 +139,6 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-}
-
-fn get_hwi(app_handle: tauri::AppHandle) -> Option<HWIClient> {
-    let hwi_binary_name = HWIClient::get_hwi_binary_name();
-    let hwi_path = app_handle
-        .path_resolver()
-        .resolve_resource(Path::new("resources/").join(hwi_binary_name))
-        .ok_or_else(|| format!("Failed to resolve HWI binary path for {}", hwi_binary_name));
-
-    if let Err(e) = hwi_path {
-        log::error!("Failed to initialize HWI: {}", e);
-        return None;
-    }
-
-    Some(HWIClient::new(hwi_path.unwrap(), true)) // TODO: set test mode by env var and disabled by default
 }
 
 fn emit_device_operation(

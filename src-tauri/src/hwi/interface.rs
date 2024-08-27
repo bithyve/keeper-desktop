@@ -1,31 +1,11 @@
 use serde_json::value::Value;
 use std::convert::TryInto;
-use std::env;
-use std::path::PathBuf;
-use std::process::Command;
 use bitcoin::bip32::DerivationPath;
 use bitcoin::Network;
+use tauri::api::process::Command;
 
 use crate::hwi::error::Error;
 use crate::hwi::types::{HWIDevice, HWIDeviceInternal, HWIExtendedPubKey};
-
-enum Architecture {
-    X86_64,
-    ARM64,
-    AARCH64,
-}
-
-// TODO: In the future we might want to ensure we only include the right binary for the architecture when building the app.
-fn get_system_info() -> (String, Architecture) {
-    let os = env::consts::OS.to_string();
-    let arch = match env::consts::ARCH {
-        "x86_64" => Architecture::X86_64,
-        "aarch64" => Architecture::AARCH64,
-        "arm" | "arm64" => Architecture::ARM64,
-        _ => panic!("Unsupported architecture"),
-    };
-    (os, arch)
-}
 
 macro_rules! deserialize_obj {
     ( $e: expr ) => {{
@@ -37,7 +17,6 @@ macro_rules! deserialize_obj {
 }
 
 pub struct HWIClient {
-    hwi_path: PathBuf,
     test_mode: bool,
     pub device_fingerprint: Option<String>,
     pub device_type: Option<String>,
@@ -45,9 +24,8 @@ pub struct HWIClient {
 }
 
 impl HWIClient {
-    pub fn new(hwi_path: PathBuf, test_mode: bool) -> Self {
+    pub fn new(test_mode: bool) -> Self {
         HWIClient {
-            hwi_path,
             test_mode,
             device_fingerprint: None,
             device_type: None,
@@ -62,22 +40,9 @@ impl HWIClient {
 
     pub fn set_network(&mut self, network: &str) {
         match network {
-            "bitcoin" | "BITCOIN" => self.network = Network::Bitcoin,
+            "mainnet" | "MAINNET" => self.network = Network::Bitcoin,
             "testnet" | "TESTNET" => self.network = Network::Testnet,
             _ => log::warn!("Unsupported network: {}", network),
-        }
-    }
-
-    pub fn get_hwi_binary_name() -> &'static str {
-        let (os, arch) = get_system_info();
-        match (os.as_str(), arch) {
-            ("windows", Architecture::X86_64) => "hwi-windows-x86_64.exe",
-            ("macos", Architecture::X86_64) => "hwi-mac-x86_64",
-            ("macos", Architecture::ARM64) => "hwi-mac-arm64",
-            ("macos", Architecture::AARCH64) => "hwi-mac-arm64",
-            ("linux", Architecture::X86_64) => "hwi-linux-x86_64",
-            ("linux", Architecture::AARCH64) => "hwi-linux-aarch64",
-            _ => panic!("Unsupported OS/architecture combination"),
         }
     }
 
@@ -98,26 +63,17 @@ impl HWIClient {
         }
 
         command_args.extend(args.into_iter().map(|s| s.to_string()));
-
-        if !self.hwi_path.exists() {
-            return Err(Error::Hwi(
-                format!("HWI binary not found at {:?}", self.hwi_path),
-                None,
-            ));
-        }
-
-        let output = Command::new(&self.hwi_path)
-            .args(&command_args)
+        
+        let output = Command::new_sidecar("hwi")
+            .map_err(|e| Error::Hwi(format!("Failed to create sidecar command: {}", e), None))?
+            .args(command_args)
             .output()
             .map_err(|e| Error::Hwi(format!("Failed to execute HWI command: {}", e), None))?;
 
         if output.status.success() {
-            Ok(String::from_utf8_lossy(&output.stdout).to_string())
+            Ok(output.stdout)
         } else {
-            Err(Error::Hwi(
-                String::from_utf8_lossy(&output.stderr).to_string(),
-                None,
-            ))
+            Err(Error::Hwi(output.stderr, None))
         }
     }
 

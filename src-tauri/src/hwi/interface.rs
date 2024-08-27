@@ -15,6 +15,7 @@ enum Architecture {
     AARCH64,
 }
 
+// TODO: In the future we might want to ensure we only include the right binary for the architecture when building the app.
 fn get_system_info() -> (String, Architecture) {
     let os = env::consts::OS.to_string();
     let arch = match env::consts::ARCH {

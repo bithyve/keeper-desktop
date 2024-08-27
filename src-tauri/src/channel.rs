@@ -65,7 +65,11 @@ impl Channel {
                         #[allow(deprecated)]
                         Payload::String(str) => warn!("Received unexpected string: {}", str),
                         Payload::Text(text) => {
-                            app_handle.emit_all("channel-message", json!({"event": event.as_str(), "data": text})).unwrap();
+                            info!("Received message from channel: {:?}", text);
+                            let _ = app_handle.trigger_global("channel-message", serde_json::to_string(&json!({"event": event.as_str(), "data": text})).ok());
+                            if let Err(e) = app_handle.emit_all("channel-message", json!({"event": event.as_str(), "data": text})) {
+                                error!("Failed to emit channel-message event: {}", e);
+                            }
                         },
                         Payload::Binary(bin_data) => warn!("Received unexpected bytes: {:#?}", bin_data),
                     }

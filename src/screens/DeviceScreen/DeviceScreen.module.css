@@ -73,7 +73,6 @@
 }
 
 .deviceIcon {
-  filter: brightness(0) invert(1);
   width: 30px;
   height: 38px;
   align-self: flex-start;
@@ -173,7 +172,7 @@
 }
 
 .actionCard h3 {
-  margin: 0;
+  margin: 0 0 5px 0;
   font-size: 16px;
   color: #333;
   font-weight: bold;

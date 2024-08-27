@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { HWIDevice, HWI_DEVICES } from "../../helpers/devices";
 import styles from "./DeviceItem.module.css";
+import hwiService from "../../services/hwiService";
 
 interface DeviceItemProps {
   device: HWIDevice;
@@ -8,7 +9,13 @@ interface DeviceItemProps {
 
 const DeviceItem = ({ device }: DeviceItemProps) => {
   return (
-    <Link to={`/device`} className={styles.deviceLink}>
+    <Link
+      key={device.fingerprint}
+      to={`/device`}
+      state={{ device }}
+      className={styles.deviceLink}
+      onClick={() => hwiService.setDeviceInfo(device.fingerprint, device.device_type)}
+    >
       <div className={styles.deviceItem}>
         <img
           src={HWI_DEVICES[device.device_type].icon}

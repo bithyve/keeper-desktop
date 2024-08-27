@@ -3,9 +3,11 @@ use std::convert::TryInto;
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
+use bitcoin::bip32::DerivationPath;
+use bitcoin::Network;
 
 use crate::hwi::error::Error;
-use crate::hwi::types::{HWIDevice, HWIDeviceInternal};
+use crate::hwi::types::{HWIDevice, HWIDeviceInternal, HWIExtendedPubKey};
 
 enum Architecture {
     X86_64,
@@ -36,6 +38,9 @@ macro_rules! deserialize_obj {
 pub struct HWIClient {
     hwi_path: PathBuf,
     test_mode: bool,
+    pub device_fingerprint: Option<String>,
+    pub device_type: Option<String>,
+    pub network: Network,
 }
 
 impl HWIClient {
@@ -43,6 +48,22 @@ impl HWIClient {
         HWIClient {
             hwi_path,
             test_mode,
+            device_fingerprint: None,
+            device_type: None,
+            network: Network::Bitcoin,
+        }
+    }
+
+    pub fn set_device_info(&mut self, fingerprint: String, device_type: String) {
+        self.device_fingerprint = Some(fingerprint);
+        self.device_type = Some(device_type);
+    }
+
+    pub fn set_network(&mut self, network: &str) {
+        match network {
+            "bitcoin" | "BITCOIN" => self.network = Network::Bitcoin,
+            "testnet" | "TESTNET" => self.network = Network::Testnet,
+            _ => log::warn!("Unsupported network: {}", network),
         }
     }
 
@@ -60,10 +81,22 @@ impl HWIClient {
     }
 
     fn run_hwi_command(&self, args: Vec<&str>) -> Result<String, Error> {
-        let mut command_args = args;
-        if self.test_mode {
-            command_args.insert(0, "--emulators");
+        let mut command_args = Vec::new();
+        
+        if args[0] != "enumerate" {
+            let fingerprint = self.device_fingerprint.clone().ok_or(Error::Hwi(
+                "Device fingerprint not set".to_string(),
+                None,
+            ))?;
+            command_args.push("--fingerprint".to_string());
+            command_args.push(fingerprint);
         }
+        
+        if self.test_mode {
+            command_args.insert(0, "--emulators".to_string());
+        }
+
+        command_args.extend(args.into_iter().map(|s| s.to_string()));
 
         if !self.hwi_path.exists() {
             return Err(Error::Hwi(
@@ -91,5 +124,19 @@ impl HWIClient {
         let output = self.run_hwi_command(vec!["enumerate"])?;
         let devices_internal: Vec<HWIDeviceInternal> = deserialize_obj!(&output)?;
         Ok(devices_internal.into_iter().map(|d| d.try_into()).collect())
+    }
+
+    pub fn get_xpub(
+        &self,
+        path: &DerivationPath,
+        expert: bool,
+    ) -> Result<HWIExtendedPubKey, Error> {
+        let prefixed_path = format!("m/{}", path);
+        let mut args = vec!["getxpub", &prefixed_path];
+        if expert {
+            args.push("--expert");
+        }
+        let output = self.run_hwi_command(args)?;
+        deserialize_obj!(&output)
     }
 }

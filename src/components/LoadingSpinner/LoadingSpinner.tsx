@@ -1,10 +1,14 @@
 import styles from "./LoadingSpinner.module.css";
 
-const LoadingSpinner = () => {
+interface LoadingSpinnerProps {
+  message?: string;
+}
+
+const LoadingSpinner = ({ message = "Loading..." }: LoadingSpinnerProps) => {
   return (
     <div className={styles.loadingContainer}>
       <div className={styles.spinner}></div>
-      <p className={styles.loadingText}>Searching for devices...</p>
+      <p className={styles.loadingText}>{message}</p>
     </div>
   );
 };

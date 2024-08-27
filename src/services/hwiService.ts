@@ -2,15 +2,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { HWIDevice, HWIDeviceType } from "../helpers/devices";
 
 const hwiService = {
-  fetchHwiAvailability: async (): Promise<boolean> => {
-    return await invoke<boolean>("is_hwi_available");
-  },
-
   fetchDevices: async (): Promise<HWIDevice[]> => {
-    const isAvailable = await hwiService.fetchHwiAvailability();
-    if (!isAvailable) {
-      throw new Error("HWI client not available");
-    }
     const devices = await invoke<HWIDevice[]>("hwi_enumerate");
     return devices.map((device) => ({
       ...device,

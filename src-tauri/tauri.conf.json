@@ -13,6 +13,14 @@
     "allowlist": {
       "all": false,
       "shell": {
+        "sidecar": true,
+        "scope": [
+          { "name": "binaries/hwi", "sidecar": true, "args": [
+              {
+                "validator": "\\S+"
+              }
+            ] }
+        ],
         "all": false,
         "open": true
       },
@@ -41,13 +49,12 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "resources": [
-        "resources/hwi-windows-x86_64.exe",
-        "resources/hwi-mac-x86_64",
-        "resources/hwi-mac-arm64",
-        "resources/hwi-linux-x86_64",
-        "resources/hwi-linux-aarch64"
-      ]
+      "externalBin": [
+        "binaries/hwi"
+      ],
+      "macOS": {
+        "entitlements": "entitlements.plist"
+      }
     }
   }
 }

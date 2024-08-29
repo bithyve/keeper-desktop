@@ -7,14 +7,26 @@ mod hwi;
 use channel::Channel;
 use device::get_xpub;
 use hwi::interface::HWIClient;
-use hwi::types::HWIDevice;
+use hwi::implementations::binary_implementation::BinaryHWIImplementation;
+use hwi::types::{HWIBinaryExecutor, HWIDevice, HWIDeviceType};
+use hwi::error::Error;
 use serde_json::Value;
+use std::str::FromStr;
 use std::sync::Mutex;
 use tauri::{Manager, State};
+use tauri::api::process::Command;
+use serde_json::json;
+
+pub struct HWIClientState {
+    hwi: HWIClient<BinaryHWIImplementation<HWIBinaryExecutorImpl>>,
+    device_type: HWIDeviceType,
+    fingerprint: String,
+    network: bitcoin::Network,
+}
 
 struct AppStateInner {
     channel: Channel,
-    hwi: HWIClient,
+    hwi: Option<HWIClientState>,
 }
 
 type AppState = Mutex<AppStateInner>;
@@ -45,41 +57,119 @@ fn generate_encryption_key(state: State<'_, AppState>) -> Result<String, String>
 // ==================== HWI Commands ====================
 
 #[tauri::command]
-async fn hwi_enumerate(state: State<'_, AppState>) -> Result<Vec<HWIDevice>, String> {
-    let state = state.lock().map_err(|e| e.to_string())?;
-    state
-        .hwi
-        .enumerate()
+async fn hwi_enumerate(_: State<'_, AppState>) -> Result<Vec<HWIDevice>, String> {
+    HWIClient::<BinaryHWIImplementation<HWIBinaryExecutorImpl>>::enumerate()
         // TODO: handle devices with error
         .map(|devices| devices.into_iter().filter_map(Result::ok).collect())
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn set_device_info(
+fn set_hwi_client(
     state: State<'_, AppState>,
     fingerprint: String,
-    device_type: String,
+    device_type: HWIDeviceType,
+    network: bitcoin::Network,
 ) -> Result<(), String> {
     let mut state = state.lock().map_err(|e| e.to_string())?;
-    state.hwi.set_device_info(fingerprint, device_type);
+    let client = HWIClient::<BinaryHWIImplementation<HWIBinaryExecutorImpl>>::find_device(
+        None,
+        Some(device_type.clone()),
+        Some(&fingerprint),
+        false,
+        network,
+    ).map_err(|e| e.to_string())?;
+    state.hwi = Some(HWIClientState {
+        hwi: client,
+        device_type,
+        fingerprint,
+        network,
+    });
     Ok(())
 }
 
 #[tauri::command]
 fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
-    let xpub_data = get_xpub(&state.hwi, state.hwi.network).map_err(|e| e.to_string())?;
-    let device_type = state.hwi.device_type.as_ref().unwrap().as_str();
-    emit_device_operation(&state.channel, "SETUP", device_type, xpub_data)
+    let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
+    let mut xpub_data = get_xpub(&hwi_state).map_err(|e| e.to_string())?;
+    xpub_data["action"] = Value::from("ADD_DEVICE");
+    let event_data = json!({
+        "event": "CHANNEL_MESSAGE",
+        "data": [
+            {
+                "responseData": xpub_data
+            }
+        ]
+    });
+
+    state.channel
+        .emit("CHANNEL_MESSAGE", event_data, false)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn device_healthcheck(state: State<'_, AppState>) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
-    let xpub_data = get_xpub(&state.hwi, state.hwi.network).map_err(|e| e.to_string())?;
-    let device_type = state.hwi.device_type.as_ref().unwrap().as_str();
-    emit_device_operation(&state.channel, "HEALTHCHECK", device_type, xpub_data)
+    let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
+    let mut xpub_data = get_xpub(&hwi_state).map_err(|e| e.to_string())?;
+    xpub_data["action"] = Value::from("HEALTH_CHECK");
+    let event_data = json!({
+        "event": "CHANNEL_MESSAGE",
+        "data": [
+            {
+                "responseData": xpub_data
+            }
+        ]
+    });
+    
+    state.channel
+        .emit("CHANNEL_MESSAGE", event_data, false)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn sign_tx(state: State<'_, AppState>, psbt: String) -> Result<(), String> {
+    let state = state.lock().map_err(|e| e.to_string())?;
+    let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
+    let signed_psbt = hwi_state.hwi.sign_tx(&bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
+    let event_data = json!({
+        "event": "CHANNEL_MESSAGE",
+        "data": [
+            {
+                "responseData": {
+                    "action": "SIGN_TX",
+                    "signedSerializedPSBT": signed_psbt
+                }
+            }
+        ]
+    });
+    
+    state.channel
+        .emit("CHANNEL_MESSAGE", event_data, false)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn register_multisig(state: State<'_, AppState>, descriptor: String) -> Result<(), String> {
+    let state = state.lock().map_err(|e| e.to_string())?;
+    let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
+    let address = hwi_state.hwi.display_address_with_desc(&descriptor).map_err(|e| e.to_string())?;
+    let event_data = json!({
+        "event": "CHANNEL_MESSAGE",
+        "data": [
+            {
+                "responseData": {
+                    "action": "REGISTER_MULTISIG",
+                    "address": address
+                }
+            }
+        ]
+    });
+    
+    state.channel
+        .emit("CHANNEL_MESSAGE", event_data, false)
+        .map_err(|e| e.to_string())
 }
 
 fn main() {
@@ -87,7 +177,6 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             let app_handle = app.handle();
-            let channel_handle = app_handle.clone();
             app_handle.listen_global("channel-message", move |event| {
                 if let Some(payload) = event.payload() {
                     let message: serde_json::Value = match serde_json::from_str(payload) {
@@ -101,30 +190,14 @@ fn main() {
                     };
 
                     match event_name {
-                        "SET_NETWORK" => {
-                            let network = message
-                                .get("data")
-                                .and_then(|d| d.as_array())
-                                .and_then(|arr| arr.first())
-                                .and_then(|elem| elem.get("network"))
-                                .and_then(|n| n.as_str());
-
-                            if let Some(network) = network {
-                                if let Ok(mut state) = channel_handle.state::<AppState>().try_lock() {
-                                    state.hwi.set_network(network);
-                                } else {
-                                    log::error!("Failed to acquire lock on AppState");
-                                }
-                            }
-                        }
+                        // TODO: Handle events as needed
                         _ => (),
                     }
                 }
             });
             let channel = Channel::new(app.handle());
             // TODO: For Linux we might need to install udev rules here or with a command for the interface.
-            let hwi = HWIClient::new(true);
-            let app_state = AppStateInner { channel, hwi };
+            let app_state = AppStateInner { channel, hwi: None };
             app.manage(Mutex::new(app_state));
             Ok(())
         })
@@ -133,29 +206,30 @@ fn main() {
             get_channel_secret,
             generate_encryption_key,
             hwi_enumerate,
-            set_device_info,
+            set_hwi_client,
             share_xpubs,
             device_healthcheck,
+            sign_tx,
+            register_multisig
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
-fn emit_device_operation(
-    channel: &Channel,
-    operation_type: &str,
-    device_type: &str,
-    xpub_data: Value,
-) -> Result<(), String> {
-    let event_name = match device_type {
-        "trezor" => format!("TREZOR_{}", operation_type),
-        "ledger" => format!("LEDGER_{}", operation_type),
-        "bitbox02" => format!("BITBOX_{}", operation_type),
-        "coldcard" => format!("LEDGER_{}", operation_type), // FOR TESTING
-        _ => return Err(format!("Unsupported device type: {}", device_type)),
-    };
+pub struct HWIBinaryExecutorImpl;
 
-    channel
-        .emit(&event_name, xpub_data, false)
-        .map_err(|e| e.to_string())
+impl HWIBinaryExecutor for HWIBinaryExecutorImpl {
+    fn execute_command(args: Vec<String>) -> Result<String, Error> {
+        let output = Command::new_sidecar("hwi")
+            .map_err(|e| Error::Hwi(format!("Failed to create sidecar command: {}", e), None))?
+            .args(args)
+            .output()
+            .map_err(|e| Error::Hwi(format!("Failed to execute command: {}", e), None))?;
+
+        if output.status.success() {
+            Ok(output.stdout)
+        } else {
+            Err(Error::Hwi(output.stderr, None))
+        }
+    }
 }

@@ -77,6 +77,8 @@ pub enum Error {
     Utf8(std::str::Utf8Error),
     Io(std::io::Error),
     Hwi(String, Option<ErrorCode>),
+    Python(pyo3::PyErr),
+    NotImplemented,
 }
 
 impl fmt::Display for Error {
@@ -88,6 +90,8 @@ impl fmt::Display for Error {
             Utf8(_) => f.write_str("utf8 error"),
             Io(_) => f.write_str("I/O error"),
             Hwi(ref s, ref code) => write!(f, "HWI error: {}, ({:?})", s, code),
+            Python(_) => f.write_str("python error"),
+            NotImplemented => f.write_str("not implemented"),
         }
     }
 }
@@ -101,6 +105,8 @@ impl std::error::Error for Error {
             Utf8(ref e) => Some(e),
             Io(ref e) => Some(e),
             Hwi(_, _) => None,
+            Python(ref e) => Some(e),
+            NotImplemented => None,
         }
     }
 }
@@ -120,5 +126,11 @@ impl From<str::Utf8Error> for Error {
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Self {
         Error::Io(e)
+    }
+}
+
+impl From<pyo3::PyErr> for Error {
+    fn from(e: pyo3::PyErr) -> Self {
+        Error::Python(e)
     }
 }

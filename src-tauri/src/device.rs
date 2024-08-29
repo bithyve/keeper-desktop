@@ -1,7 +1,7 @@
 use bitcoin::bip32::DerivationPath;
 use bitcoin::Network;
-use crate::hwi::interface::HWIClient;
 use crate::hwi::error::Error as HWIError;
+use crate::HWIClientState;
 use serde_json::json;
 
 pub enum ScriptType {
@@ -9,19 +9,19 @@ pub enum ScriptType {
     P2WSH,
 }
 
-pub fn get_xpub(client: &HWIClient, network: Network) -> Result<serde_json::Value, HWIError> {
-    let ss_path = get_derivation_path(ScriptType::P2WPKH, network);
-    let ms_path = get_derivation_path(ScriptType::P2WSH, network);
+pub fn get_xpub(hwi_state: &HWIClientState) -> Result<serde_json::Value, HWIError> {
+    let ss_path = get_derivation_path(ScriptType::P2WPKH, hwi_state.network);
+    let ms_path = get_derivation_path(ScriptType::P2WSH, hwi_state.network);
 
-    let single_sig_xpub = client.get_xpub(&ss_path, false)?;
-    let multi_sig_xpub = client.get_xpub(&ms_path, false)?;
+    let single_sig_xpub = hwi_state.hwi.get_xpub(&ss_path, false)?;
+    let multi_sig_xpub = hwi_state.hwi.get_xpub(&ms_path, false)?;
 
     Ok(json!({
         "singleSigPath": ss_path.to_string(),
         "singleSigXpub": single_sig_xpub.to_string(),
         "multiSigPath": ms_path.to_string(),
         "multiSigXpub": multi_sig_xpub.to_string(),
-        "mfp": hex::encode(client.device_fingerprint.as_deref().unwrap_or_default()),
+        "mfp": hex::encode(hwi_state.fingerprint.clone()),
     }))
 }
 

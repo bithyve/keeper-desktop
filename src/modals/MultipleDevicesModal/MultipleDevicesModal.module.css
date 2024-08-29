@@ -1,0 +1,39 @@
+.icon {
+  width: 147px;
+  height: 143px;
+}
+
+.title {
+  font-size: 18px;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+.text {
+  font-size: 15px;
+  color: #3E524D;
+  margin: 0 7%;
+  font-weight: light;
+  line-height: 20px;
+}
+
+.continueButton {
+  background-color: #2D6759;
+  color: #fff;
+  border: none;
+  padding: 15px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px;
+  position: relative;
+}
+
+.continueButton:hover {
+  background-color: #1e4d3f;
+}

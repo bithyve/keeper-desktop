@@ -93,6 +93,7 @@
 }
 
 .qrCode {
+  position: relative;
   width: 250px;
   height: 250px;
   background-color: #2d6759;
@@ -109,8 +110,8 @@
   font-size: 18px;
   font-weight: 600;
   color: #FDF7F0;
-  margin-top: 30px;
-  margin-bottom: 20px;
+  margin-top: 22px;
+  margin-bottom: 16px;
 }
 
 .qrNote {
@@ -127,4 +128,39 @@
   width: 200px;
   height: 200px;
   margin-top: 20px;
+}
+
+.regenerateButton {
+  position: absolute;
+  bottom: 12px;
+  right: 27px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  border-radius: 50%;
+}
+
+.regenerateButton img {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.regenerateButton:hover {
+  transform: scale(1.1);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.regenerateButton:hover img {
+  transform: rotate(180deg);
+}
+
+.regenerateButton:active {
+  transform: scale(0.95);
 }

@@ -61,24 +61,16 @@ impl<T: HWIBinaryExecutor> HWIImplementation for BinaryHWIImplementation<T> {
             args.extend_from_slice(&["--password", pw]);
         }
 
-        let device_type_str = device_type.map(|dt| dt.to_string());
-
-        if let Some(dt) = device_type_str.as_deref() {
-            args.extend_from_slice(&["--device-type", dt]);
-        }
-        if let Some(fp) = fingerprint {
-            args.extend_from_slice(&["--fingerprint", fp]);
-        }
-
         let output =
             BinaryHWIImplementation::<T>::run_hwi_command(None, expert, Some(&client.chain), args)?;
         let devices: Vec<HWIDevice> = deserialize_obj!(&output)?;
 
-        if devices.is_empty() {
-            return Err(Error::Hwi("No devices found".to_string(), None));
-        }
+        let device = devices.into_iter().filter(|d| {
+            device_type.as_ref().map_or(true, |t| &d.device_type == t) &&
+            fingerprint.map_or(true, |f| &d.fingerprint.to_string() == f)
+        }).next().ok_or_else(|| Error::Hwi("No matching device found".to_string(), None))?;
 
-        client.device = Some(devices[0].clone());
+        client.device = Some(device);
         Ok(client)
     }
 
@@ -307,7 +299,7 @@ impl<T: HWIBinaryExecutor> BinaryHWIImplementation<T> {
     ) -> Result<String, Error> {
         let mut command_args = Vec::new();
 
-        if args[0] != "enumerate" && args[0] != "--version" {
+        if !args.contains(&"enumerate") && !args.contains(&"--version") {
             let fingerprint = device
                 .ok_or(Error::Hwi("Device fingerprint not set".to_string(), None))?
                 .fingerprint;

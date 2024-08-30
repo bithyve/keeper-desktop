@@ -1,3 +1,4 @@
+use bitcoin::network;
 use rust_socketio::{ClientBuilder, Payload, Event};
 use rust_socketio::client::Client;
 use serde_json::json;
@@ -67,9 +68,20 @@ impl Channel {
                         Payload::Text(text) => {
                             info!("Channel received event: {:?} with message: {:?}", event.as_str(), text);
                             if event.as_str() == "CHANNEL_MESSAGE" {
-                                let _ = app_handle.trigger_global("channel-message", serde_json::to_string(&json!({"event": event.as_str(), "data": text})).ok());
-                                if let Err(e) = app_handle.emit_all("channel-message", json!({"event": event.as_str(), "data": text})) {
-                                    error!("Failed to emit channel-message event: {}", e);
+                                if let Ok(state) = app_handle.state::<crate::AppState>().try_lock() {
+                                    let text = serde_json::to_value(text).map_err(|_| "Failed to parse message as JSON");
+                                    if let Ok(text) = text {
+                                        match state.channel.process_channel_message(&text) {
+                                            Ok(processed_data) => {
+                                                if let Err(e) = app_handle.emit_all("channel-message", processed_data) {
+                                                    error!("Failed to emit channel-message event: {:?}, got error: {:?}", text, e);
+                                                }
+                                            },
+                                            Err(e) => error!("Error processing message: {}", e),
+                                        }
+                                    } else {
+                                        error!("Error converting text to JSON: {}", text.err().unwrap());
+                                    }
                                 }
                             }
                         },
@@ -97,7 +109,7 @@ impl Channel {
     /// Emits an event with data to the current room
     /// 
     /// If `skip_encryption` is false, the data will be encrypted before sending
-    pub fn emit(&self, event: &str, data: serde_json::Value, skip_encryption: bool) -> Result<(), ChannelError> {
+    pub fn emit(&self, event: &str, data: serde_json::Value, skip_encryption: bool, network: Option<&str>) -> Result<(), ChannelError> {
         let encrypted = if !skip_encryption {
             self.encrypt_data(data)?
         } else {
@@ -106,7 +118,11 @@ impl Channel {
 
         if let Some(room) = &self.room {
             if let Some(client) = &self.client {
-                client.emit(event, json!({"room": room, "data": encrypted}))
+                let mut data = json!({"room": room, "data": encrypted});
+                if let Some(network) = network {
+                    data["network"] = serde_json::Value::String(network.to_string());
+                }
+                client.emit(event, data)
                     .map_err(|e| ChannelError::SocketIoError(e.to_string()))?;
                 Ok(())
             } else {
@@ -127,7 +143,7 @@ impl Channel {
         self.encryption_key = Some(key.clone());
         self.room = Some(room.clone());
         
-        self.emit("JOIN_CHANNEL", json!({"room": room}), true)?;
+        self.emit("JOIN_CHANNEL", json!({"room": room}), true, None)?;
         
         Ok(key)
     }
@@ -156,7 +172,7 @@ impl Channel {
     /// Decrypts the provided encrypted data
     /// 
     /// Expects a JSON object containing the IV and encrypted data
-    pub fn decrypt_data(&self, encrypted: serde_json::Value) -> Result<serde_json::Value, ChannelError> {
+    pub fn decrypt_data(&self, encrypted: &serde_json::Value) -> Result<serde_json::Value, ChannelError> {
         let encryption_key = self.encryption_key.as_ref().ok_or(ChannelError::NoEncryptionKey)?;
         let key_bytes = hex::decode(encryption_key)?;
 
@@ -172,6 +188,23 @@ impl Channel {
         let decrypted_string = String::from_utf8(decrypted_data)?;
 
         serde_json::from_str(&decrypted_string).map_err(ChannelError::from)
+    }
+
+    pub fn process_channel_message(&self, message: &serde_json::Value) -> Result<serde_json::Value, String> {
+        let data = message.as_array().and_then(|arr| arr.first()).ok_or("Failed to parse message")?;
+
+        let request_data = data.get("requestData").ok_or("Failed to parse message data")?;
+
+        let network = data.get("network").ok_or("Failed to parse message network")?;
+
+        let data = if request_data.get("encryptedData").is_some() {
+            self.decrypt_data(request_data)
+                .map_err(|_| "Failed to decrypt message from channel")?
+        } else {
+            request_data.clone()
+        };
+
+        Ok(json!({ "data": data, "network": network }))
     }
 }
 

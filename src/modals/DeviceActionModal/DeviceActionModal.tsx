@@ -46,6 +46,7 @@ const DeviceActionModal = ({
 
   const handleContinue = async () => {
     setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 100));
     try {
       switch (actionType) {
         case 'connect':

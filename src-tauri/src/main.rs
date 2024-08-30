@@ -10,7 +10,6 @@ use hwi::interface::HWIClient;
 use hwi::implementations::binary_implementation::BinaryHWIImplementation;
 use hwi::types::{HWIBinaryExecutor, HWIDevice, HWIDeviceType};
 use hwi::error::Error;
-use serde_json::Value;
 use std::str::FromStr;
 use std::sync::Mutex;
 use tauri::{Manager, State};
@@ -24,12 +23,12 @@ pub struct HWIClientState {
     network: bitcoin::Network,
 }
 
-struct AppStateInner {
+pub struct AppStateInner {
     channel: Channel,
     hwi: Option<HWIClientState>,
 }
 
-type AppState = Mutex<AppStateInner>;
+pub type AppState = Mutex<AppStateInner>;
 
 // ==================== Channel Commands ====================
 
@@ -92,19 +91,20 @@ fn set_hwi_client(
 fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let mut xpub_data = get_xpub(&hwi_state).map_err(|e| e.to_string())?;
-    xpub_data["action"] = Value::from("ADD_DEVICE");
+    let xpub_data = get_xpub(&hwi_state).map_err(|e| e.to_string())?;
+
     let event_data = json!({
         "event": "CHANNEL_MESSAGE",
-        "data": [
-            {
-                "responseData": xpub_data
+        "data": {
+            "responseData": {
+                "action": "ADD_DEVICE",
+                "data": xpub_data
             }
-        ]
+        }
     });
 
     state.channel
-        .emit("CHANNEL_MESSAGE", event_data, false)
+        .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
         .map_err(|e| e.to_string())
 }
 
@@ -112,19 +112,20 @@ fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
 fn device_healthcheck(state: State<'_, AppState>) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let mut xpub_data = get_xpub(&hwi_state).map_err(|e| e.to_string())?;
-    xpub_data["action"] = Value::from("HEALTH_CHECK");
+    let xpub_data = get_xpub(&hwi_state).map_err(|e| e.to_string())?;
+
     let event_data = json!({
         "event": "CHANNEL_MESSAGE",
-        "data": [
-            {
-                "responseData": xpub_data
+        "data": {
+            "responseData": {
+                "action": "HEALTH_CHECK",
+                "data": xpub_data
             }
-        ]
+        }
     });
     
     state.channel
-        .emit("CHANNEL_MESSAGE", event_data, false)
+        .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
         .map_err(|e| e.to_string())
 }
 
@@ -135,18 +136,18 @@ fn sign_tx(state: State<'_, AppState>, psbt: String) -> Result<(), String> {
     let signed_psbt = hwi_state.hwi.sign_tx(&bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
     let event_data = json!({
         "event": "CHANNEL_MESSAGE",
-        "data": [
-            {
-                "responseData": {
-                    "action": "SIGN_TX",
+        "data": {
+            "responseData": {
+                "action": "SIGN_TX",
+                "data": {
                     "signedSerializedPSBT": signed_psbt
                 }
             }
-        ]
+        }
     });
     
     state.channel
-        .emit("CHANNEL_MESSAGE", event_data, false)
+        .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
         .map_err(|e| e.to_string())
 }
 
@@ -157,18 +158,18 @@ fn register_multisig(state: State<'_, AppState>, descriptor: String) -> Result<(
     let address = hwi_state.hwi.display_address_with_desc(&descriptor).map_err(|e| e.to_string())?;
     let event_data = json!({
         "event": "CHANNEL_MESSAGE",
-        "data": [
-            {
-                "responseData": {
-                    "action": "REGISTER_MULTISIG",
+        "data": {
+            "responseData": {
+                "action": "REGISTER_MULTISIG",
+                "data": {
                     "address": address
                 }
             }
-        ]
+        }
     });
     
     state.channel
-        .emit("CHANNEL_MESSAGE", event_data, false)
+        .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
         .map_err(|e| e.to_string())
 }
 
@@ -176,25 +177,6 @@ fn main() {
     env_logger::init();
     tauri::Builder::default()
         .setup(|app| {
-            let app_handle = app.handle();
-            app_handle.listen_global("channel-message", move |event| {
-                if let Some(payload) = event.payload() {
-                    let message: serde_json::Value = match serde_json::from_str(payload) {
-                        Ok(m) => m,
-                        Err(_) => return,
-                    };
-
-                    let event_name = match message.get("event").and_then(|e| e.as_str()) {
-                        Some(e) => e,
-                        None => return,
-                    };
-
-                    match event_name {
-                        // TODO: Handle events as needed
-                        _ => (),
-                    }
-                }
-            });
             let channel = Channel::new(app.handle());
             // TODO: For Linux we might need to install udev rules here or with a command for the interface.
             let app_state = AppStateInner { channel, hwi: None };
@@ -220,6 +202,10 @@ pub struct HWIBinaryExecutorImpl;
 
 impl HWIBinaryExecutor for HWIBinaryExecutorImpl {
     fn execute_command(args: Vec<String>) -> Result<String, Error> {
+        let mut args = args;
+        // TODO: Downgrade binaries to HWI 2.x and remove this flag
+        args.insert(0, "--emulators".to_string());
+
         let output = Command::new_sidecar("hwi")
             .map_err(|e| Error::Hwi(format!("Failed to create sidecar command: {}", e), None))?
             .args(args)

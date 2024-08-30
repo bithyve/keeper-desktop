@@ -257,6 +257,7 @@ impl From<HWIStatus> for Result<(), Error> {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum HWIDeviceType {
     Ledger,
     Trezor,

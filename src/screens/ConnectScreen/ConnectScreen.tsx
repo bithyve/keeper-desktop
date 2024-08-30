@@ -19,7 +19,7 @@ const ConnectScreen = () => {
   const [isDeviceActionSuccessModalOpen, setIsDeviceActionSuccessModalOpen] = useState(false);
   const [isNotFoundModalOpen, setIsNotFoundModalOpen] = useState(false);
   const [isMultipleDevicesModalOpen, setIsMultipleDevicesModalOpen] = useState(false);
-  const [deviceType, setDeviceType] = useState<HWIDeviceType | null>("ledger");
+  const [deviceType, setDeviceType] = useState<HWIDeviceType | null>(null);
   const [currentAction, setCurrentAction] = useState<"connect" | "shareXpubs" | "healthCheck" | "signTx" | "registerMultisig">("connect");
   const [actionType, setActionType] = useState<"shareXpubs" | "healthCheck" | "signTx" | "registerMultisig" | null>(null);
   const [network, setNetwork] = useState<"TESTNET" | "MAINNET" | null>(null);
@@ -36,17 +36,17 @@ const ConnectScreen = () => {
   const closeMultipleDevicesModal = () => setIsMultipleDevicesModalOpen(false);
 
   const handleConnectResult = async (devices: HWIDevice[]) => {
-    closeDeviceActionModal();
     if (devices.length > 1) {
       openMultipleDevicesModal();
     } else if (devices.length === 0) {
       openNotFoundModal();
     } else {
       if (deviceType && network) {
-        await hwiService.setHWIClient(devices[0].fingerprint, deviceType, network);
+        await hwiService.setHWIClient(devices[0].fingerprint, deviceType, network.toLowerCase());
         openDeviceActionSuccessModal();
       }
     }
+    closeDeviceActionModal();
   };
 
   const handleActionSuccess = () => {
@@ -70,34 +70,29 @@ const ConnectScreen = () => {
   useEffect(() => {
     setupChannel();
 
-    const unsubscribe = listen('channel-message', async (channelMessage: any) => {
-      const { event, data } = channelMessage.payload;
-      if (event === "CHANNEL_MESSAGE") {
-        setDeviceType(data[0].signerType as HWIDeviceType);
-        switch (data[0].action) {
-          case "ADD_DEVICE":
-            setActionType("shareXpubs");
-            break;
-          case "HEALTH_CHECK":
-            setActionType("healthCheck");
-            break;
-          case "SIGN_TX":
-            setActionType("signTx");
-            setPsbt(data[0].psbt);
-            break;
-          case "REGISTER_MULTISIG":
-            setActionType("registerMultisig");
-            setDescriptor(data[0].descriptor);
-            break;
-        }
-        setNetwork(data[0].network as "TESTNET" | "MAINNET");
-        setCurrentAction("connect");
-        openDeviceActionModal();
+    const unsubscribe = listen("channel-message", async (channelMessage: any) => {
+      const { data, network} = channelMessage.payload;
+      console.log("channelMessage", data);
+      setDeviceType(data.signerType.toLowerCase() as HWIDeviceType);
+      switch (data.action) {
+        case "ADD_DEVICE":
+          setActionType("shareXpubs");
+          break;
+        case "HEALTH_CHECK":
+          setActionType("healthCheck");
+          break;
+        case "SIGN_TX":
+          setActionType("signTx");
+          setPsbt(data.psbt);
+          break;
+        case "REGISTER_MULTISIG":
+          setActionType("registerMultisig");
+          setDescriptor(data.descriptor);
+          break;
       }
-
-      if (event === "CHANNEL_MESSAGE") {
-        console.log("channelMessage", channelMessage);
-      }
+      setNetwork(network as "TESTNET" | "MAINNET");
+      setCurrentAction("connect");
+      openDeviceActionModal();
     });
 
     return () => {

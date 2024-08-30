@@ -1,4 +1,3 @@
-use bitcoin::network;
 use rust_socketio::{ClientBuilder, Payload, Event};
 use rust_socketio::client::Client;
 use serde_json::json;

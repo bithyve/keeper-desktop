@@ -83,7 +83,7 @@ const ConnectScreen = () => {
           break;
         case "SIGN_TX":
           setActionType("signTx");
-          setPsbt(data.psbt);
+          setPsbt(data.psbt.serializedPSBT);
           break;
         case "REGISTER_MULTISIG":
           setActionType("registerMultisig");

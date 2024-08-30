@@ -65,10 +65,13 @@ impl<T: HWIBinaryExecutor> HWIImplementation for BinaryHWIImplementation<T> {
             BinaryHWIImplementation::<T>::run_hwi_command(None, expert, Some(&client.chain), args)?;
         let devices: Vec<HWIDevice> = deserialize_obj!(&output)?;
 
-        let device = devices.into_iter().filter(|d| {
-            device_type.as_ref().map_or(true, |t| &d.device_type == t) &&
-            fingerprint.map_or(true, |f| &d.fingerprint.to_string() == f)
-        }).next().ok_or_else(|| Error::Hwi("No matching device found".to_string(), None))?;
+        let device = devices
+            .into_iter()
+            .find(|d| {
+                device_type.as_ref().map_or(true, |t| &d.device_type == t)
+                    && fingerprint.map_or(true, |f| d.fingerprint.to_string() == f)
+            })
+            .ok_or_else(|| Error::Hwi("No matching device found".to_string(), None))?;
 
         client.device = Some(device);
         Ok(client)

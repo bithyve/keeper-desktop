@@ -32,7 +32,9 @@
       {
         "title": "Keeper Desktop",
         "width": 900,
-        "height": 670
+        "height": 670,
+        "resizable": false,
+        "fullscreen": false
       }
     ],
     "security": {

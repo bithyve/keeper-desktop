@@ -4,23 +4,3 @@ body, html {
   height: 100%;
   font-family: FiraSans, sans-serif;
 }
-
-button.btn {
-  width: 142px;
-  height: 42px;
-  padding: 13px 19.05px 9px 20px;
-  justify-content: center;
-  align-items: center;
-  border: none;
-  border-radius: 10px;
-  background: var(--Primary-Cream, #f7f2ec);
-  color: var(--Primary-Green, #2d6759);
-  text-align: center;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px;
-}
-
-button.btn-inverted {
-}

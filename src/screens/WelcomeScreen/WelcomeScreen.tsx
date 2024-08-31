@@ -10,7 +10,7 @@ const WelcomeScreen = () => {
         <img src={keeperLogo} alt="Keeper Logo" className={styles.keeperLogo} />
         <p className={styles.tagline}>Secure Today, Plan for Tomorrow</p>
         <Link to="/connect" replace={true}>
-          <button className="btn">Get Started</button>
+          <button className={styles.btn}>Get Started</button>
         </Link>
       </div>
       <footer className={styles.footer}>

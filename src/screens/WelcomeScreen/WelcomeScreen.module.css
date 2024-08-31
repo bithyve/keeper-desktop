@@ -23,16 +23,18 @@
 .keeperLogo {
   width: 310px;
   height: 132px;
-  margin-bottom: 19px;
+  margin-bottom: 0px;
 }
 
 .tagline {
-  font-size: 18px;
+  margin-top: 10px;
+  font-size: 19px;
   font-style: normal;
-  font-weight: 200;
+  font-weight: 400;
   line-height: normal;
-  margin-bottom: 50px;
+  margin-bottom: 30px;
   text-align: center;
+  color: #FFF6DE;
 }
 
 .footer {

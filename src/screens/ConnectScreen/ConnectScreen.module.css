@@ -17,29 +17,30 @@
 }
 
 .keeperLogo {
-  width: 102px;
-  height: 44px;
+  width: 139px;
+  height: 78px;
 }
 
 .title {
   margin-top: 38px;
-  max-width: 500px;
+  max-width: 345px;
   font-size: 25px;
   font-weight: 700;
   line-height: normal;
+  margin-bottom: 0px;
 }
 
 .instructionsContainer {
-  margin-top: 50px;
-  max-width: 500px;
+  margin-top: 25px;
+  max-width: 350px;
 }
 
 .instructionsTitle {
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .instructionsIcon {
@@ -50,8 +51,8 @@
 
 .instructionsList {
   padding-left: 20px;
-  font-size: 15px;
-  font-weight: 200;
+  font-size: 14px;
+  font-weight: 400;
   line-height: 20px;
 }
 
@@ -61,20 +62,22 @@
 
 .note {
   margin-top: auto;
-  padding-top: 30px;
-  width: 90%;
+  padding-top: 15px;
+  width: 360px;
 }
 
 .note h4 {
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 0px;
 }
 
 .note p {
-  font-size: 14px;
+  margin-top: 5px;
+  font-size: 12px;
   font-weight: 200;
-  line-height: 18px;
+  line-height: 17px;
+  font-weight: 400;
 }
 
 .qrContainer {
@@ -115,10 +118,10 @@
 }
 
 .qrNote {
-  max-width: 250px;
+  max-width: 230px;
   color: var(--Secondary-Caption, #878787);
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 200;
   line-height: 20px; 

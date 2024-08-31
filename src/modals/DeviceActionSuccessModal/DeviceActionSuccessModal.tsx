@@ -2,13 +2,13 @@ import BaseModal from '../BaseModal/BaseModal';
 import styles from './DeviceActionSuccessModal.module.css';
 import baseStyles from '../BaseModal/BaseModal.module.css';
 import successIcon from '../../assets/hwi-success-icon.svg';
-import { HWI_DEVICES, HWIDeviceType } from '../../helpers/devices';
+import { HWI_ACTION, HWI_DEVICES, HWIDeviceType } from '../../helpers/devices';
 
 interface DeviceActionSuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
   deviceType: HWIDeviceType;
-  actionType: "connect" | "shareXpubs" | "healthCheck" | "signTx" | "registerMultisig";
+  actionType: HWI_ACTION;
   onConnectConfirmed: () => void;
 }
 
@@ -56,6 +56,11 @@ const DeviceActionSuccessModal = ({
         return {
           title: `Multisig Registered Successfully!`,
           text: `Your multisig has been successfully registered and is now available for use.`,
+        };
+      case "verifyAddress":
+        return {
+          title: `Address Verified Successfully!`,
+          text: `Your address has been successfully verified, you can now safely use it to receive funds.`,
         };
     }
   };

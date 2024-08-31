@@ -37,6 +37,10 @@ const hwiService = {
   registerMultisig: async (descriptor: string): Promise<void> => {
     await invoke<void>("register_multisig", { descriptor });
   },
+
+  verifyAddress: async (descriptor: string): Promise<void> => {
+    await invoke<void>("verify_address", { descriptor });
+  },
 };
 
 export default hwiService;

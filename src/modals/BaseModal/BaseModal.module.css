@@ -67,10 +67,35 @@
   align-items: center;
   min-height: 50px;
   position: relative;
-  margin-top: 20px;
 }
 
 .continueButton:hover {
   background-color: #1e4d3f;
 }
 
+.modalContent ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.modalContent li {
+  color: #3E524D;
+  position: relative;
+  padding-left: 15px;
+  margin: 20px 0;
+  font-size: 15px;
+  line-height: 20px;
+  text-align: left;
+}
+
+.modalContent li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  background-color: #073B36;
+  border-radius: 50%;
+}

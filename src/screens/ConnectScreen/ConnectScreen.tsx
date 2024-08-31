@@ -1,5 +1,5 @@
 import styles from "./ConnectScreen.module.css";
-import keeperLogo from "../../assets/keeper-logo.png";
+import keeperLogo from "../../assets/keeper-with-slogan-logo.png";
 import instructionsIcon from "../../assets/instructions-icon.svg";
 import refreshIcon from "../../assets/refresh.svg";
 
@@ -11,7 +11,7 @@ import DeviceDeviceActionModal from "../../modals/DeviceActionModal/DeviceAction
 import DeviceDeviceActionSuccessModal from "../../modals/DeviceActionSuccessModal/DeviceActionSuccessModal";
 import DeviceNotFoundModal from "../../modals/DeviceNotFoundModal/DeviceNotFoundModal";
 import MultipleDevicesModal from "../../modals/MultipleDevicesModal/MultipleDevicesModal";
-import { HWIDevice, HWIDeviceType } from "../../helpers/devices";
+import { HWI_ACTION, HWIDevice, HWIDeviceType } from "../../helpers/devices";
 import hwiService from "../../services/hwiService";
 
 const ConnectScreen = () => {
@@ -20,8 +20,8 @@ const ConnectScreen = () => {
   const [isNotFoundModalOpen, setIsNotFoundModalOpen] = useState(false);
   const [isMultipleDevicesModalOpen, setIsMultipleDevicesModalOpen] = useState(false);
   const [deviceType, setDeviceType] = useState<HWIDeviceType | null>(null);
-  const [currentAction, setCurrentAction] = useState<"connect" | "shareXpubs" | "healthCheck" | "signTx" | "registerMultisig">("connect");
-  const [actionType, setActionType] = useState<"shareXpubs" | "healthCheck" | "signTx" | "registerMultisig" | null>(null);
+  const [currentAction, setCurrentAction] = useState<HWI_ACTION>("connect");
+  const [actionType, setActionType] = useState<HWI_ACTION | null>(null);
   const [network, setNetwork] = useState<"TESTNET" | "MAINNET" | null>(null);
   const [psbt, setPsbt] = useState<string | null>(null);
   const [descriptor, setDescriptor] = useState<string | null>(null);
@@ -89,6 +89,10 @@ const ConnectScreen = () => {
           setActionType("registerMultisig");
           setDescriptor(data.descriptor);
           break;
+        case "VERIFY_ADDRESS":
+          setActionType("verifyAddress");
+          setDescriptor(data.descriptor);
+          break;
       }
       setNetwork(network as "TESTNET" | "MAINNET");
       setCurrentAction("connect");
@@ -104,7 +108,9 @@ const ConnectScreen = () => {
     <div className={styles.connectScreen}>
       <div className={styles.leftSection}>
         <img src={keeperLogo} alt="Keeper Logo" className={styles.keeperLogo} />
-        <h1 className={styles.title}>Welcome to Keeper Desktop App</h1>
+        <h1 className={styles.title}>
+          Welcome to Bitcoin Keeper’s Desktop App
+        </h1>
         <div className={styles.instructionsContainer}>
           <h3 className={styles.instructionsTitle}>
             <img
@@ -115,14 +121,18 @@ const ConnectScreen = () => {
             Instructions:
           </h3>
           <ul className={styles.instructionsList}>
-            <li>From the keeper app, open QR scanner and Scan this app</li>
             <li>
-              You can use this for adding a device, registering a vault, or to
-              sign transactions
+              You can add devices, register vaults and sign transactions using
+              Keeper's desktop app.
             </li>
             <li>
-              You will need a new QR for each operation you perform, by just
-              refreshing
+              Open the QR scanner from the Keeper mobile app and scan the QR
+              alongside.
+            </li>
+            <li>
+              Please refresh the QR for every new operation (adding keys,
+              registering vaults, signing transactions, health checks) you
+              perform.
             </li>
           </ul>
         </div>
@@ -130,7 +140,7 @@ const ConnectScreen = () => {
           <h4>Note:</h4>
           <p>
             This QR will get you the key to Decrypt the data from this Keeper
-            Web Interface to make communication E2R encrypted
+            Web Interface to make communication E2R encrypted.
           </p>
         </div>
       </div>
@@ -144,7 +154,7 @@ const ConnectScreen = () => {
         </div>
         <p className={styles.qrNote}>
           Make sure No one is around you when you scan this. You can always
-          refresh to get fresh key session
+          refresh to get fresh key session.
         </p>
       </div>
       {deviceType && (

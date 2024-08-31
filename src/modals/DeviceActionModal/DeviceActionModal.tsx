@@ -1,21 +1,17 @@
 import { useState } from 'react';
 import BaseModal from '../BaseModal/BaseModal';
-import deviceContent, { HWI_DEVICES, HWIDevice, HWIDeviceType } from "../../helpers/devices";
+import { deviceContent, HWI_ACTION, HWI_DEVICES, HWIDevice, HWIDeviceType } from "../../helpers/devices";
 import styles from './DeviceActionModal.module.css';
 import baseStyles from "../BaseModal/BaseModal.module.css";
 import loader from '../../assets/loader.svg';
 import hwiService from '../../services/hwiService';
+import verifyAddressIcon from '../../assets/verify-address-icon.svg';
 
 interface DeviceActionModalProps {
   isOpen: boolean;
   onClose: () => void;
   deviceType: HWIDeviceType;
-  actionType:
-    | "connect"
-    | "shareXpubs"
-    | "healthCheck"
-    | "signTx"
-    | "registerMultisig";
+  actionType: HWI_ACTION;
   psbt: string | null;
   descriptor: string | null;
   onConnectResult: (devices: HWIDevice[]) => void;
@@ -29,6 +25,7 @@ const actionTitle = (deviceType: HWIDeviceType) => ({
   healthCheck: `${HWI_DEVICES[deviceType].name} Health Check`,
   signTx: "Sign Transaction",
   registerMultisig: `Register Multisig on ${HWI_DEVICES[deviceType].name}`,
+  verifyAddress: `Verify Address on your ${HWI_DEVICES[deviceType].name}`,
 });
 
 const DeviceActionModal = ({
@@ -77,6 +74,14 @@ const DeviceActionModal = ({
           await hwiService.registerMultisig(descriptor);
           onActionSuccess();
           break;
+        case 'verifyAddress':
+          if (!descriptor) {
+            onError("Descriptor is required");
+            return;
+          }
+          await hwiService.verifyAddress(descriptor);
+          onActionSuccess();
+          break;
         default:
           throw new Error('Unsupported action type');
       }
@@ -89,23 +94,46 @@ const DeviceActionModal = ({
   };
 
   const content = deviceContent[deviceType];
+  const hasListItems = content.content[actionType].list.length > 0;
+
+  const isVerifyAddress = actionType === "verifyAddress";
+  const iconSrc = isVerifyAddress ? verifyAddressIcon : content.icon;
+  const iconStyle = isVerifyAddress ? { width: '203px', height: '157px' } : {};
 
   const modalContent = {
     image: (
       <img
-        src={content.icon}
+        src={iconSrc}
         alt={`${deviceType} icon`}
         className={`${baseStyles.icon} ${styles.icon}`}
+        style={iconStyle}
       />
     ),
     title: (
-      <h2 className={`${baseStyles.title} ${styles.title}`}>
+      <h2
+        className={`${baseStyles.title} ${styles.title}`}
+        style={{
+          textAlign: hasListItems ? "left" : "center",
+          marginLeft: hasListItems ? "25px" : "0",
+        }}
+      >
         {actionTitle(deviceType)[actionType]}
       </h2>
     ),
     content: (
-      <p className={`${baseStyles.text} ${styles.text}`}>
-        {content.content[actionType]}
+      <p
+        className={`${baseStyles.text} ${styles.text}`}
+        style={{
+          textAlign: hasListItems ? "left" : "center",
+          marginLeft: hasListItems ? "25px" : "0",
+        }}
+      >
+        {content.content[actionType].text}
+        <ul>
+          {content.content[actionType].list.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
       </p>
     ),
     button: (

@@ -3,7 +3,8 @@ import keeperLogo from "../../assets/keeper-with-slogan-logo.png";
 import instructionsIcon from "../../assets/instructions-icon.svg";
 import refreshIcon from "../../assets/refresh.svg";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
 import { invoke } from '@tauri-apps/api/tauri';
 import { listen } from '@tauri-apps/api/event';
 import QRCode from 'qrcode.react';
@@ -11,6 +12,7 @@ import DeviceDeviceActionModal from "../../modals/DeviceActionModal/DeviceAction
 import DeviceDeviceActionSuccessModal from "../../modals/DeviceActionSuccessModal/DeviceActionSuccessModal";
 import DeviceNotFoundModal from "../../modals/DeviceNotFoundModal/DeviceNotFoundModal";
 import MultipleDevicesModal from "../../modals/MultipleDevicesModal/MultipleDevicesModal";
+import ErrorModal from "../../modals/ErrorModal/ErrorModal";
 import { HWI_ACTION, HWIDevice, HWIDeviceType } from "../../helpers/devices";
 import hwiService from "../../services/hwiService";
 
@@ -25,15 +27,19 @@ const ConnectScreen = () => {
   const [network, setNetwork] = useState<"TESTNET" | "MAINNET" | null>(null);
   const [psbt, setPsbt] = useState<string | null>(null);
   const [descriptor, setDescriptor] = useState<string | null>(null);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const openDeviceActionModal = () => setIsDeviceActionModalOpen(true);
   const openDeviceActionSuccessModal = () => setIsDeviceActionSuccessModalOpen(true);
   const openNotFoundModal = () => setIsNotFoundModalOpen(true);
   const openMultipleDevicesModal = () => setIsMultipleDevicesModalOpen(true);
+  const openErrorModal = () => setIsErrorModalOpen(true);
   const closeDeviceActionModal = () => setIsDeviceActionModalOpen(false);
   const closeDeviceActionSuccessModal = () => setIsDeviceActionSuccessModalOpen(false);
   const closeNotFoundModal = () => setIsNotFoundModalOpen(false);
   const closeMultipleDevicesModal = () => setIsMultipleDevicesModalOpen(false);
+  const closeErrorModal = () => setIsErrorModalOpen(false);
 
   const handleConnectResult = async (devices: HWIDevice[]) => {
     if (devices.length > 1) {
@@ -57,19 +63,22 @@ const ConnectScreen = () => {
   const handleError = (error: string) => {
     console.log("handleError", error);
     closeDeviceActionModal();
-    // TODO: handle error
+    setErrorMessage(error);
+    openErrorModal();
   };
 
-  const [qrData, setQrData] = useState('');
-
-  const setupChannel = useCallback(async () => {    
-    const channelSecret = await invoke<string>('generate_encryption_key');
-    setQrData(channelSecret);
-  }, []);
+  const { data: channelSecret, refetch: regenerateQR } = useQuery({
+    queryKey: ["channelSecret"],
+    queryFn: () => invoke<string>("generate_encryption_key"),
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    refetchOnWindowFocus: false,
+  });
 
   useEffect(() => {
-    setupChannel();
-
+    setActionType("shareXpubs");
+    setDeviceType("ledger");
+    setNetwork("TESTNET");
+    openDeviceActionModal();
     const unsubscribe = listen("channel-message", async (channelMessage: any) => {
       const { data, network} = channelMessage.payload;
       console.log("channelMessage", data);
@@ -102,7 +111,7 @@ const ConnectScreen = () => {
     return () => {
       unsubscribe.then(f => f());
     };
-  }, [setupChannel]);
+  }, []);
 
   return (
     <div className={styles.connectScreen}>
@@ -146,9 +155,17 @@ const ConnectScreen = () => {
       </div>
       <div className={styles.qrContainer}>
         <div className={styles.qrCode}>
-          <QRCode value={qrData} size={200} bgColor="#2d6759" fgColor="#fff" />
+          <QRCode
+            value={channelSecret ?? ""}
+            size={200}
+            bgColor="#2d6759"
+            fgColor="#fff"
+          />
           <p className={styles.scanMe}>Scan Me</p>
-          <button className={styles.regenerateButton} onClick={setupChannel}>
+          <button
+            className={styles.regenerateButton}
+            onClick={() => regenerateQR()}
+          >
             <img src={refreshIcon} alt="Regenerate QR Code" />
           </button>
         </div>
@@ -201,6 +218,15 @@ const ConnectScreen = () => {
             deviceType={deviceType}
             onContinue={() => {
               closeMultipleDevicesModal();
+              openDeviceActionModal();
+            }}
+          />
+          <ErrorModal
+            isOpen={isErrorModalOpen}
+            onClose={closeErrorModal}
+            errorMessage={errorMessage}
+            onRetry={() => {
+              closeErrorModal();
               openDeviceActionModal();
             }}
           />

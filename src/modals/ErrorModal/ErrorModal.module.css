@@ -1,0 +1,36 @@
+.errorMessageContainer {
+  max-width: 100%;
+  margin-bottom: 15px;
+}
+
+.expandedError {
+  max-height: 100px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.errorMessage {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #e53935;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.expandButton {
+  background: none;
+  border: none;
+  color: #2d6759;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.expandButton:hover {
+  color: #1e4d3f;
+}

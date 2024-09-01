@@ -75,10 +75,6 @@ const ConnectScreen = () => {
   });
 
   useEffect(() => {
-    setActionType("shareXpubs");
-    setDeviceType("ledger");
-    setNetwork("TESTNET");
-    openDeviceActionModal();
     const unsubscribe = listen("channel-message", async (channelMessage: any) => {
       const { data, network} = channelMessage.payload;
       console.log("channelMessage", data);

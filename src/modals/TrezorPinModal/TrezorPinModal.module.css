@@ -1,0 +1,41 @@
+.icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+.pinPad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.pinButton {
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pinInput {
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.error {
+  color: #e53935;
+  margin-top: 10px;
+}
+
+.submitButton {
+  margin-top: 20px;
+}

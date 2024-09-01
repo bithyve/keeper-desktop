@@ -3,6 +3,7 @@ import BaseModal from "../BaseModal/BaseModal";
 import styles from "./TrezorPinModal.module.css";
 import baseStyles from "../BaseModal/BaseModal.module.css";
 import TrezorIcon from "../../assets/hww/icons-modal/trezor.svg";
+import ErrorIcon from "../../assets/error-popup-icon.svg";
 import hwiService from "../../services/hwiService";
 
 interface TrezorPinModalProps {
@@ -11,7 +12,7 @@ interface TrezorPinModalProps {
   onSuccess: () => void;
 }
 
-const TrezorPinModal = ({ isOpen, onClose, onSuccess }: TrezorPinModalProps) => {
+const TrezorPinModal: React.FC<TrezorPinModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
 
@@ -21,8 +22,7 @@ const TrezorPinModal = ({ isOpen, onClose, onSuccess }: TrezorPinModalProps) => 
 
   const handlePinSubmit = async () => {
     if (pin.length < 4) {
-      setError("PIN must be at least 4 digits");
-      return;
+      return showError("PIN must be at least 4 digits");
     }
     console.log("pin", pin);
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -30,36 +30,54 @@ const TrezorPinModal = ({ isOpen, onClose, onSuccess }: TrezorPinModalProps) => 
       await hwiService.sendPin(pin);
       onSuccess();
     } catch (error) {
-      setError("Enter PIN failed");
+      return showError("Enter PIN failed");
     }
   };
 
+  function showError(error: string) {
+    setError(error);
+    setPin("");
+    const timer = setTimeout(() => {
+      setError("");
+    }, 4000);
+    return () => clearTimeout(timer);
+  }
+
   const modalContent = {
-    image: <img src={TrezorIcon} alt="Trezor" className={styles.icon} />,
-    title: <h2 className={baseStyles.title}>Enter the pin</h2>,
+    image: (
+      <img
+        src={TrezorIcon}
+        alt="Trezor"
+        className={`${baseStyles.icon} ${styles.icon}`}
+      />
+    ),
+    title: (
+      <h2 className={`${baseStyles.title} ${styles.title}`}>Enter the pin</h2>
+    ),
     content: (
       <>
-        <p className={baseStyles.text}>
-          Follow the keypad layout on your Trezor
-        </p>
-        <div className={styles.pinPad}>
-          {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
-            <button
-              key={num}
-              onClick={() => handlePinClick(num.toString())}
-              className={styles.pinButton}
-            >
-              •
-            </button>
-          ))}
+        <div className={`${styles.errorContainer} ${error ? styles.show : ""}`}>
+          <div className={styles.error}>
+            <img src={ErrorIcon} alt="Error" className={styles.errorIcon} />
+            <span>{error}</span>
+          </div>
         </div>
-        <input
-          type="password"
-          value={pin}
-          readOnly
-          className={styles.pinInput}
-        />
-        {error && <p className={styles.error}>{error}</p>}
+        <div className={styles.textContainer}>
+          <p className={`${baseStyles.text} ${styles.text}`}>
+            Follow the keypad layout on your Trezor
+          </p>
+        </div>
+        <div className={styles.pinPadContainer}>
+          <div className={styles.pinPad}>
+            {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
+              <button
+                key={num}
+                onClick={() => handlePinClick(num.toString())}
+                className={styles.pinButton}
+              />
+            ))}
+          </div>
+        </div>
       </>
     ),
     button: (

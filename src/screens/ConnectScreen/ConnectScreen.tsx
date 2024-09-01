@@ -15,6 +15,7 @@ import MultipleDevicesModal from "../../modals/MultipleDevicesModal/MultipleDevi
 import ErrorModal from "../../modals/ErrorModal/ErrorModal";
 import { HWI_ACTION, HWIDevice, HWIDeviceType } from "../../helpers/devices";
 import hwiService from "../../services/hwiService";
+import TrezorPinModal from "../../modals/TrezorPinModal/TrezorPinModal";
 
 const ConnectScreen = () => {
   const [isDeviceActionModalOpen, setIsDeviceActionModalOpen] = useState(false);
@@ -29,17 +30,20 @@ const ConnectScreen = () => {
   const [descriptor, setDescriptor] = useState<string | null>(null);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showPinModal, setShowPinModal] = useState(false);
 
   const openDeviceActionModal = () => setIsDeviceActionModalOpen(true);
   const openDeviceActionSuccessModal = () => setIsDeviceActionSuccessModalOpen(true);
   const openNotFoundModal = () => setIsNotFoundModalOpen(true);
   const openMultipleDevicesModal = () => setIsMultipleDevicesModalOpen(true);
   const openErrorModal = () => setIsErrorModalOpen(true);
+  const openPinModal = () => setShowPinModal(true);
   const closeDeviceActionModal = () => setIsDeviceActionModalOpen(false);
   const closeDeviceActionSuccessModal = () => setIsDeviceActionSuccessModalOpen(false);
   const closeNotFoundModal = () => setIsNotFoundModalOpen(false);
   const closeMultipleDevicesModal = () => setIsMultipleDevicesModalOpen(false);
   const closeErrorModal = () => setIsErrorModalOpen(false);
+  const closePinModal = () => setShowPinModal(false);
 
   const handleConnectResult = async (devices: HWIDevice[]) => {
     if (devices.length > 1) {
@@ -49,7 +53,11 @@ const ConnectScreen = () => {
     } else {
       if (deviceType && network) {
         await hwiService.setHWIClient(devices[0].fingerprint, deviceType, network.toLowerCase());
-        openDeviceActionSuccessModal();
+        if (devices[0].needs_pin_sent) {
+          openPinModal();
+        } else {
+          openDeviceActionSuccessModal();
+        }
       }
     }
     closeDeviceActionModal();
@@ -224,6 +232,14 @@ const ConnectScreen = () => {
             onRetry={() => {
               closeErrorModal();
               openDeviceActionModal();
+            }}
+          />
+          <TrezorPinModal
+            isOpen={showPinModal}
+            onClose={closePinModal}
+            onSuccess={() => {
+              closePinModal();
+              openDeviceActionSuccessModal();
             }}
           />
         </>

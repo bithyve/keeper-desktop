@@ -173,6 +173,28 @@ fn register_multisig(state: State<'_, AppState>, descriptor: String) -> Result<(
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn verify_address(state: State<'_, AppState>, descriptor: String) -> Result<(), String> {
+    let state = state.lock().map_err(|e| e.to_string())?;
+    let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
+    let address = hwi_state.hwi.display_address_with_desc(&descriptor).map_err(|e| e.to_string())?;
+    let event_data = json!({
+        "event": "CHANNEL_MESSAGE",
+        "data": {
+            "responseData": {
+                "action": "VERIFY_ADDRESS",
+                "data": {
+                    "address": address
+                }
+            }
+        }
+    });
+    
+    state.channel
+        .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
+        .map_err(|e| e.to_string())
+}
+
 fn main() {
     env_logger::init();
     tauri::Builder::default()

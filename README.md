@@ -4,6 +4,11 @@ Keeper Desktop is a a secure, cross-platform desktop app for using hardhaware wa
 
 ## Getting Started
 
+### Prerequisites
+
+- Rust: Make sure you have Rust installed. If not, visit [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install) for installation instructions.
+- Node.js and npm: Ensure you have Node.js and npm installed. You can download them from [https://nodejs.org/](https://nodejs.org/).
+
 ### Installation
 
 1. Clone the repository:

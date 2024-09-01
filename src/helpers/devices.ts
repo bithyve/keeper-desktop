@@ -80,15 +80,17 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
         list: [],
       },
       shareXpubs: {
-        text: "Keep your Ledger device connected to the computer before proceeding. Please make sure you have BTC app downloaded on Ledger before this step.",
+        text: "Keep your Ledger device connected to the computer before proceeding.",
         list: [
-          "Health check is initiated if a signer is not used for last 180 days",
-          "Please Make sure you have the BTC app downloaded on Ledger before this step",
+          "Please make sure you have BTC app downloaded on Ledger before this step.",
         ],
       },
       healthCheck: {
         text: "Your Mobile app is trying to perform a health check. Please keep your Ledger connected to the computer to continue with Keeper Desktop app.",
-        list: [],
+        list: [
+          "Health check is initiated if a signer is not used for last 180 days",
+          "Please make sure you have the BTC app downloaded on Ledger before this step",
+        ],
       },
       signTx: {
         text: "Please sign the transaction by approving it on the connected Ledger device.",
@@ -116,12 +118,15 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
         list: [],
       },
       shareXpubs: {
-        text: "Keep your Trezor device connected to the computer before proceeding. Please make sure you have BTC app downloaded on Trezor before this step.",
+        text: "Keep your Trezor device connected to the computer before proceeding.",
         list: [],
       },
       healthCheck: {
-        text: "Your Mobile app is trying to perform a health check. Please keep your Trezor connected to the computer to continue with Keeper Desktop app.",
-        list: [],
+        text: "Your Mobile app is trying to perform a health check. Please keep your Trezor connected to the computer.",
+        list: [
+          "Health check is initiated if a signer is not used for last 180 days",
+          "Make sure you have the device is setup with the Trezor Connect app before using it with Desktop Keeper App",
+        ],
       },
       signTx: {
         text: "Please sign the transaction by approving it on the connected Trezor device.",
@@ -149,12 +154,17 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
         list: [],
       },
       shareXpubs: {
-        text: "Keep your BitBox02 device connected to the computer before proceeding. Please make sure the device was setup with the BitBox02 app before using it with Keeper Desktop App.",
-        list: [],
+        text: "Keep your BitBox02 device connected to the computer before proceeding.",
+        list: [
+          "Please make sure the device is setup with the BitBox02 app before using it with Keeper Desktop App",
+        ],
       },
       healthCheck: {
-        text: "Your Mobile app is trying to perform a health check. Please keep your BitBox02 connected to the computer to continue with Keeper Desktop app.",
-        list: [],
+        text: "Your Mobile app is trying to perform a health check. Please keep your BitBox02 connected to the computer.",
+        list: [
+          "Health check is initiated if a signer is not used for last 180 days",
+          "Make sure that the device is setup with the Bitbox02 app before using it with the Keeper Desktop App",
+        ],
       },
       signTx: {
         text: "Please sign the transaction by approving it on the connected BitBox02 device.",

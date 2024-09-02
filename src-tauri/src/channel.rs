@@ -1,7 +1,6 @@
 use aes_gcm::aead::rand_core::RngCore;
 use aes_gcm::aead::{Aead, KeyInit, OsRng};
 use aes_gcm::{Aes256Gcm, Key, Nonce};
-use hex;
 use log::{error, info, warn};
 use rust_socketio::client::Client;
 use rust_socketio::{ClientBuilder, Event, Payload};

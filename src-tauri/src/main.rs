@@ -20,6 +20,7 @@ use tauri::{Manager, State};
 
 pub struct HWIClientState {
     hwi: HWIClient<BinaryHWIImplementation<HWIBinaryExecutorImpl>>,
+    #[allow(dead_code)]
     device_type: HWIDeviceType,
     fingerprint: String,
     network: bitcoin::Network,
@@ -94,7 +95,7 @@ fn set_hwi_client(
 fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let xpub_data = get_xpub(&hwi_state).map_err(|e| e.to_string())?;
+    let xpub_data = get_xpub(hwi_state).map_err(|e| e.to_string())?;
 
     let event_data = json!({
         "event": "CHANNEL_MESSAGE",
@@ -121,7 +122,7 @@ fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
 fn device_healthcheck(state: State<'_, AppState>) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let xpub_data = get_xpub(&hwi_state).map_err(|e| e.to_string())?;
+    let xpub_data = get_xpub(hwi_state).map_err(|e| e.to_string())?;
 
     let event_data = json!({
         "event": "CHANNEL_MESSAGE",

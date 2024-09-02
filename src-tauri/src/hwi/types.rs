@@ -11,9 +11,6 @@ use bitcoin::Psbt;
 
 use serde::{Deserialize, Deserializer, Serialize};
 
-#[cfg(feature = "miniscript")]
-use miniscript::{Descriptor, DescriptorPublicKey};
-
 use crate::hwi::error::{Error, ErrorCode};
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
@@ -78,8 +75,6 @@ impl Deref for HWIPartiallySignedTransaction {
 
 pub trait ToDescriptor {}
 impl ToDescriptor for String {}
-#[cfg(feature = "miniscript")]
-impl ToDescriptor for Descriptor<DescriptorPublicKey> {}
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIDescriptor<T>

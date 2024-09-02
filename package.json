@@ -10,7 +10,11 @@
     "tauri": "tauri",
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{js,jsx,ts,tsx}' --fix",
-    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css,md}'"
+    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css,md}'",
+    "format:check": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css,md}'",
+    "tauri:lint": "cd src-tauri && cargo clippy --all-targets --all-features -- -D warnings",
+    "tauri:format": "cd src-tauri && cargo fmt",
+    "tauri:format:check": "cd src-tauri && cargo fmt -- --check"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.52.1",

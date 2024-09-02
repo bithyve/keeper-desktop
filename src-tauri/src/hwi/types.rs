@@ -9,13 +9,10 @@ use bitcoin::bip32::{Fingerprint, Xpub};
 use bitcoin::Network;
 use bitcoin::Psbt;
 
-use pyo3::types::PyModule;
-use pyo3::{IntoPy, PyObject};
 use serde::{Deserialize, Deserializer, Serialize};
 
 #[cfg(feature = "miniscript")]
 use miniscript::{Descriptor, DescriptorPublicKey};
-use pyo3::prelude::PyAnyMethods;
 
 use crate::hwi::error::{Error, ErrorCode};
 
@@ -123,21 +120,6 @@ impl fmt::Display for HWIAddressType {
     }
 }
 
-impl IntoPy<PyObject> for HWIAddressType {
-    fn into_py(self, py: pyo3::Python) -> PyObject {
-        let addrtype = PyModule::import_bound(py, "hwilib.common")
-            .unwrap()
-            .getattr("AddressType")
-            .unwrap();
-        match self {
-            HWIAddressType::Legacy => addrtype.get_item("LEGACY").unwrap().into(),
-            HWIAddressType::Sh_Wit => addrtype.get_item("SH_WIT").unwrap().into(),
-            HWIAddressType::Wit => addrtype.get_item("WIT").unwrap().into(),
-            HWIAddressType::Tap => addrtype.get_item("TAP").unwrap().into(),
-        }
-    }
-}
-
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIChain(bitcoin::Network);
 
@@ -150,27 +132,6 @@ impl fmt::Display for HWIChain {
             bitcoin::Network::Signet => "SIGNET",
             _ => "UNKNOWN",
         })
-    }
-}
-
-impl IntoPy<PyObject> for HWIChain {
-    fn into_py(self, py: pyo3::Python) -> PyObject {
-        use bitcoin::Network::*;
-
-        let chain = PyModule::import_bound(py, "hwilib.common")
-            .unwrap()
-            .getattr("Chain")
-            .unwrap();
-        match self.0 {
-            Bitcoin => chain.get_item("MAIN").unwrap().into(),
-            Testnet => chain.get_item("TEST").unwrap().into(),
-            Regtest => chain.get_item("REGTEST").unwrap().into(),
-            Signet => chain.get_item("SIGNET").unwrap().into(),
-            // This handles non_exhaustive on Network which is only there to future proof
-            // rust-bitcoin, will need to check this when upgrading rust-bitcoin.
-            // Sane as of rust-bitcoin v0.30.0
-            _ => panic!("unknown network"),
-        }
     }
 }
 

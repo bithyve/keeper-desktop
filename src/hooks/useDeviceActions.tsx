@@ -7,6 +7,7 @@ interface UseDeviceActionsProps {
   actionType: HWI_ACTION;
   psbt: string | null;
   descriptor: string | null;
+  expectedAddress: string | null;
   onConnectResult: (devices: HWIDevice[]) => void;
   onActionSuccess: () => void;
   onError: (error: string) => void;
@@ -17,6 +18,7 @@ export const useDeviceActions = ({
   actionType,
   psbt,
   descriptor,
+  expectedAddress,
   onConnectResult,
   onActionSuccess,
   onError,
@@ -53,7 +55,7 @@ export const useDeviceActions = ({
             onError("Descriptor is required");
             return;
           }
-          await hwiService.registerMultisig(descriptor);
+          await hwiService.registerMultisig(descriptor, expectedAddress ?? "");
           onActionSuccess();
           break;
         case "verifyAddress":

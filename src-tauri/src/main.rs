@@ -16,6 +16,7 @@ use tauri::{Manager, State};
 use tauri::api::process::Command;
 use serde_json::json;
 use bitcoin::base64::{engine::general_purpose, Engine as _};
+use bitcoin::Address;
 
 pub struct HWIClientState {
     hwi: HWIClient<BinaryHWIImplementation<HWIBinaryExecutorImpl>>,
@@ -153,22 +154,25 @@ fn sign_tx(state: State<'_, AppState>, psbt: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn register_multisig(state: State<'_, AppState>, descriptor: String) -> Result<(), String> {
+fn register_multisig(state: State<'_, AppState>, descriptor: String, expected_address: String) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let address = hwi_state.hwi.display_address_with_desc(&descriptor).map_err(|e| e.to_string())?;
+    if address.address != Address::from_str(&expected_address).map_err(|e| e.to_string())? {
+        return Err("Address received from device does not match the expected address".to_string());
+    }
     let event_data = json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
             "responseData": {
                 "action": "REGISTER_MULTISIG",
                 "data": {
-                    "address": address
+                    "address": address.address
                 }
             }
         }
     });
-    
+
     state.channel
         .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
         .map_err(|e| e.to_string())

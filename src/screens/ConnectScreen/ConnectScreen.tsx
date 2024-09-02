@@ -100,11 +100,13 @@ const ConnectScreen = () => {
           break;
         case "REGISTER_MULTISIG":
           setActionType("registerMultisig");
-          setDescriptor(data.descriptor);
+          const descriptor = data.descriptorString.replace(/\*\*/g, "0/0");
+          setDescriptor(descriptor);
+          setExpectedAddress(data.firstExtAdd);
           break;
         case "VERIFY_ADDRESS":
           setActionType("verifyAddress");
-          setDescriptor(data.descriptor);
+          setDescriptor(data.descriptorString);
           break;
       }
       setNetwork(network as "TESTNET" | "MAINNET");

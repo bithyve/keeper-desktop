@@ -13,6 +13,7 @@ interface DeviceActionModalProps {
   actionType: HWI_ACTION;
   psbt: string | null;
   descriptor: string | null;
+  expectedAddress: string | null;
   onConnectResult: (devices: HWIDevice[]) => void;
   onActionSuccess: () => void;
   onError: (error: string) => void;
@@ -34,6 +35,7 @@ const DeviceActionModal = ({
   actionType,
   psbt,
   descriptor,
+  expectedAddress,
   onConnectResult,
   onActionSuccess,
   onError,
@@ -43,6 +45,7 @@ const DeviceActionModal = ({
     actionType,
     psbt,
     descriptor,
+    expectedAddress,
     onConnectResult,
     onActionSuccess,
     onError,

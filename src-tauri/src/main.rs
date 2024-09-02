@@ -15,6 +15,7 @@ use std::sync::Mutex;
 use tauri::{Manager, State};
 use tauri::api::process::Command;
 use serde_json::json;
+use bitcoin::base64::{engine::general_purpose, Engine as _};
 
 pub struct HWIClientState {
     hwi: HWIClient<BinaryHWIImplementation<HWIBinaryExecutorImpl>>,
@@ -140,12 +141,12 @@ fn sign_tx(state: State<'_, AppState>, psbt: String) -> Result<(), String> {
             "responseData": {
                 "action": "SIGN_TX",
                 "data": {
-                    "signedSerializedPSBT": signed_psbt
+                    "signedSerializedPSBT": general_purpose::STANDARD.encode(signed_psbt.serialize())
                 }
             }
         }
     });
-    
+
     state.channel
         .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
         .map_err(|e| e.to_string())
@@ -214,7 +215,8 @@ fn main() {
             share_xpubs,
             device_healthcheck,
             sign_tx,
-            register_multisig
+            register_multisig,
+            verify_address
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

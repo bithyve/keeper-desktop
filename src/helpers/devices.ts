@@ -9,6 +9,8 @@ import bitboxIconModal from "../assets/hww/icons-modal/bitbox.svg";
 // import coldcardIconModal from "../assets/hww/icons-modal/coldcard.svg";
 // import jadeIconModal from "../assets/hww/icons-modal/jade.svg";
 
+type NetworkType = "TESTNET" | "MAINNET";
+
 const HWI_ACTIONS = {
   connect: "connect",
   shareXpubs: "shareXpubs",
@@ -194,4 +196,4 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
   // },
 };
 
-export { HWI_DEVICES, HWI_ACTIONS, deviceContent, type HWI_ACTION , type HWIDeviceType, type HWIDevice };
+export { HWI_DEVICES, HWI_ACTIONS, deviceContent, type HWI_ACTION , type HWIDeviceType, type HWIDevice, type NetworkType };

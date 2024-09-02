@@ -8,71 +8,51 @@ import { useQuery } from "@tanstack/react-query";
 import { invoke } from '@tauri-apps/api/tauri';
 import { listen } from '@tauri-apps/api/event';
 import QRCode from 'qrcode.react';
-import DeviceDeviceActionModal from "../../modals/DeviceActionModal/DeviceActionModal";
-import DeviceDeviceActionSuccessModal from "../../modals/DeviceActionSuccessModal/DeviceActionSuccessModal";
-import DeviceNotFoundModal from "../../modals/DeviceNotFoundModal/DeviceNotFoundModal";
-import MultipleDevicesModal from "../../modals/MultipleDevicesModal/MultipleDevicesModal";
-import ErrorModal from "../../modals/ErrorModal/ErrorModal";
-import { HWI_ACTION, HWIDevice, HWIDeviceType } from "../../helpers/devices";
+import useModalState from '../../hooks/useModalState';
+import { HWI_ACTION, HWIDevice, HWIDeviceType, NetworkType } from "../../helpers/devices";
+import ModalsManager from "../../modals/ModalManager";
 import hwiService from "../../services/hwiService";
-import TrezorPinModal from "../../modals/TrezorPinModal/TrezorPinModal";
 
 const ConnectScreen = () => {
-  const [isDeviceActionModalOpen, setIsDeviceActionModalOpen] = useState(false);
-  const [isDeviceActionSuccessModalOpen, setIsDeviceActionSuccessModalOpen] = useState(false);
-  const [isNotFoundModalOpen, setIsNotFoundModalOpen] = useState(false);
-  const [isMultipleDevicesModalOpen, setIsMultipleDevicesModalOpen] = useState(false);
+  const {
+    openModal,
+    openModalHandler,
+    closeModalHandler,
+  } = useModalState();
+
   const [deviceType, setDeviceType] = useState<HWIDeviceType | null>(null);
   const [currentAction, setCurrentAction] = useState<HWI_ACTION>("connect");
   const [actionType, setActionType] = useState<HWI_ACTION | null>(null);
-  const [network, setNetwork] = useState<"TESTNET" | "MAINNET" | null>(null);
+  const [network, setNetwork] = useState<NetworkType | null>(null);
   const [psbt, setPsbt] = useState<string | null>(null);
   const [descriptor, setDescriptor] = useState<string | null>(null);
-  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [expectedAddress, setExpectedAddress] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [showPinModal, setShowPinModal] = useState(false);
-
-  const openDeviceActionModal = () => setIsDeviceActionModalOpen(true);
-  const openDeviceActionSuccessModal = () => setIsDeviceActionSuccessModalOpen(true);
-  const openNotFoundModal = () => setIsNotFoundModalOpen(true);
-  const openMultipleDevicesModal = () => setIsMultipleDevicesModalOpen(true);
-  const openErrorModal = () => setIsErrorModalOpen(true);
-  const openPinModal = () => setShowPinModal(true);
-  const closeDeviceActionModal = () => setIsDeviceActionModalOpen(false);
-  const closeDeviceActionSuccessModal = () => setIsDeviceActionSuccessModalOpen(false);
-  const closeNotFoundModal = () => setIsNotFoundModalOpen(false);
-  const closeMultipleDevicesModal = () => setIsMultipleDevicesModalOpen(false);
-  const closeErrorModal = () => setIsErrorModalOpen(false);
-  const closePinModal = () => setShowPinModal(false);
 
   const handleConnectResult = async (devices: HWIDevice[]) => {
     if (devices.length > 1) {
-      openMultipleDevicesModal();
+      openModalHandler('multipleDevices');
     } else if (devices.length === 0) {
-      openNotFoundModal();
+      openModalHandler('notFound');
     } else {
       if (deviceType && network) {
         await hwiService.setHWIClient(devices[0].fingerprint, deviceType, network.toLowerCase());
         if (devices[0].needs_pin_sent) {
-          openPinModal();
+          openModalHandler('pin');
         } else {
-          openDeviceActionSuccessModal();
+          openModalHandler('deviceActionSuccess');
         }
       }
     }
-    closeDeviceActionModal();
   };
 
   const handleActionSuccess = () => {
-    closeDeviceActionModal();
-    openDeviceActionSuccessModal();
+    openModalHandler('deviceActionSuccess');
   };
 
   const handleError = (error: string) => {
-    console.log("handleError", error);
-    closeDeviceActionModal();
     setErrorMessage(error);
-    openErrorModal();
+    openModalHandler('error');
   };
 
   const { data: channelSecret, refetch: regenerateQR } = useQuery({
@@ -109,9 +89,9 @@ const ConnectScreen = () => {
           setDescriptor(data.descriptorString);
           break;
       }
-      setNetwork(network as "TESTNET" | "MAINNET");
+      setNetwork(network as NetworkType);
       setCurrentAction("connect");
-      openDeviceActionModal();
+      openModalHandler('deviceAction');
     });
 
     return () => {
@@ -124,7 +104,7 @@ const ConnectScreen = () => {
       <div className={styles.leftSection}>
         <img src={keeperLogo} alt="Keeper Logo" className={styles.keeperLogo} />
         <h1 className={styles.title}>
-          Welcome to Bitcoin Keeper’s Desktop App
+          Welcome to Bitcoin Keeper's Desktop App
         </h1>
         <div className={styles.instructionsContainer}>
           <h3 className={styles.instructionsTitle}>
@@ -181,70 +161,22 @@ const ConnectScreen = () => {
         </p>
       </div>
       {deviceType && (
-        <>
-          <DeviceDeviceActionModal
-            isOpen={isDeviceActionModalOpen}
-            onClose={closeDeviceActionModal}
-            deviceType={deviceType}
-            actionType={currentAction}
-            psbt={psbt}
-            descriptor={descriptor}
-            onConnectResult={handleConnectResult}
-            onActionSuccess={handleActionSuccess}
-            onError={handleError}
-          />
-
-          <DeviceDeviceActionSuccessModal
-            isOpen={isDeviceActionSuccessModalOpen}
-            onClose={closeDeviceActionSuccessModal}
-            deviceType={deviceType}
-            actionType={currentAction}
-            onConnectConfirmed={() => {
-              closeDeviceActionSuccessModal();
-              if (actionType) {
-                setCurrentAction(actionType);
-                openDeviceActionModal();
-              }
-            }}
-          />
-
-          <DeviceNotFoundModal
-            isOpen={isNotFoundModalOpen}
-            onClose={closeNotFoundModal}
-            deviceType={deviceType}
-            onContinue={() => {
-              closeNotFoundModal();
-              openDeviceActionModal();
-            }}
-          />
-
-          <MultipleDevicesModal
-            isOpen={isMultipleDevicesModalOpen}
-            onClose={closeMultipleDevicesModal}
-            deviceType={deviceType}
-            onContinue={() => {
-              closeMultipleDevicesModal();
-              openDeviceActionModal();
-            }}
-          />
-          <ErrorModal
-            isOpen={isErrorModalOpen}
-            onClose={closeErrorModal}
-            errorMessage={errorMessage}
-            onRetry={() => {
-              closeErrorModal();
-              openDeviceActionModal();
-            }}
-          />
-          <TrezorPinModal
-            isOpen={showPinModal}
-            onClose={closePinModal}
-            onSuccess={() => {
-              closePinModal();
-              openDeviceActionSuccessModal();
-            }}
-          />
-        </>
+        <ModalsManager
+          openModal={openModal}
+          closeModalHandler={closeModalHandler}
+          deviceType={deviceType}
+          currentAction={currentAction}
+          actionType={actionType}
+          psbt={psbt}
+          descriptor={descriptor}
+          expectedAddress={expectedAddress}
+          errorMessage={errorMessage}
+          handleConnectResult={handleConnectResult}
+          handleActionSuccess={handleActionSuccess}
+          handleError={handleError}
+          setCurrentAction={setCurrentAction}
+          openModalHandler={openModalHandler}
+        />
       )}
     </div>
   );

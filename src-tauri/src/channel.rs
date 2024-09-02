@@ -1,15 +1,15 @@
-use rust_socketio::{ClientBuilder, Payload, Event};
-use rust_socketio::client::Client;
-use serde_json::json;
-use aes_gcm::aead::{Aead, KeyInit, OsRng};
 use aes_gcm::aead::rand_core::RngCore;
+use aes_gcm::aead::{Aead, KeyInit, OsRng};
 use aes_gcm::{Aes256Gcm, Key, Nonce};
-use tauri::Manager;
-use sha2::{Sha256, Digest};
 use hex;
-use log::{info, error, warn};
-use thiserror::Error;
+use log::{error, info, warn};
+use rust_socketio::client::Client;
+use rust_socketio::{ClientBuilder, Event, Payload};
+use serde_json::json;
+use sha2::{Digest, Sha256};
 use std::ops::Drop;
+use tauri::Manager;
+use thiserror::Error;
 
 const URL: &str = "https://keeper-channel.herokuapp.com/";
 
@@ -86,7 +86,7 @@ impl Channel {
                 }
             })
             .connect();
-        
+
         Channel {
             client: client.ok(),
             room: None,
@@ -97,15 +97,23 @@ impl Channel {
     /// Disconnects the Socket.IO client
     pub fn disconnect(&self) -> Result<(), ChannelError> {
         if let Some(client) = &self.client {
-            client.disconnect().map_err(|e| ChannelError::SocketIoError(e.to_string()))?;
+            client
+                .disconnect()
+                .map_err(|e| ChannelError::SocketIoError(e.to_string()))?;
         }
         Ok(())
     }
 
     /// Emits an event with data to the current room
-    /// 
+    ///
     /// If `skip_encryption` is false, the data will be encrypted before sending
-    pub fn emit(&self, event: &str, data: serde_json::Value, skip_encryption: bool, network: Option<&str>) -> Result<(), ChannelError> {
+    pub fn emit(
+        &self,
+        event: &str,
+        data: serde_json::Value,
+        skip_encryption: bool,
+        network: Option<&str>,
+    ) -> Result<(), ChannelError> {
         let encrypted = if !skip_encryption {
             self.encrypt_data(data)?
         } else {
@@ -118,7 +126,8 @@ impl Channel {
                 if let Some(network) = network {
                     data["network"] = serde_json::Value::String(network.to_string());
                 }
-                client.emit(event, data)
+                client
+                    .emit(event, data)
                     .map_err(|e| ChannelError::SocketIoError(e.to_string()))?;
                 Ok(())
             } else {
@@ -130,7 +139,7 @@ impl Channel {
     }
 
     /// Generates a new encryption key and joins a new room
-    /// 
+    ///
     /// Returns the generated encryption key
     pub fn generate_encryption_key(&mut self) -> Result<String, ChannelError> {
         let mut random_bytes = [0u8; 32];
@@ -139,17 +148,20 @@ impl Channel {
         let room = hex::encode(Sha256::digest(&key));
         self.encryption_key = Some(key.clone());
         self.room = Some(room.clone());
-        
+
         self.emit("JOIN_CHANNEL", json!({"room": room}), true, None)?;
-        
+
         Ok(key)
     }
 
     /// Encrypts the provided data using AES-256-GCM
-    /// 
+    ///
     /// Returns a JSON object containing the iv, encrypted data, and authTag
     fn encrypt_data(&self, data: serde_json::Value) -> Result<serde_json::Value, ChannelError> {
-        let encryption_key = self.encryption_key.as_ref().ok_or(ChannelError::NoEncryptionKey)?;
+        let encryption_key = self
+            .encryption_key
+            .as_ref()
+            .ok_or(ChannelError::NoEncryptionKey)?;
         let key_bytes = hex::decode(encryption_key)?;
 
         let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
@@ -161,7 +173,8 @@ impl Channel {
         let data = data.to_string();
         let plaintext = data.as_bytes();
 
-        let ciphertext_with_tag = cipher.encrypt(nonce, plaintext)
+        let ciphertext_with_tag = cipher
+            .encrypt(nonce, plaintext)
             .map_err(|e| ChannelError::EncryptionError(e.to_string()))?;
 
         let (ciphertext, auth_tag) = ciphertext_with_tag.split_at(ciphertext_with_tag.len() - 16);
@@ -174,18 +187,32 @@ impl Channel {
     }
 
     /// Decrypts the provided encrypted data
-    /// 
+    ///
     /// Expects a JSON object containing the iv, encrypted data, and authTag
-    pub fn decrypt_data(&self, encrypted: &serde_json::Value) -> Result<serde_json::Value, ChannelError> {
-        let encryption_key = self.encryption_key.as_ref().ok_or(ChannelError::NoEncryptionKey)?;
+    pub fn decrypt_data(
+        &self,
+        encrypted: &serde_json::Value,
+    ) -> Result<serde_json::Value, ChannelError> {
+        let encryption_key = self
+            .encryption_key
+            .as_ref()
+            .ok_or(ChannelError::NoEncryptionKey)?;
         let key_bytes = hex::decode(encryption_key)?;
 
         let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
         let cipher = Aes256Gcm::new(key);
 
         let nonce = hex::decode(encrypted["iv"].as_str().ok_or(ChannelError::InvalidIV)?)?;
-        let encrypted_data = hex::decode(encrypted["encryptedData"].as_str().ok_or(ChannelError::InvalidEncryptedData)?)?;
-        let auth_tag = hex::decode(encrypted["authTag"].as_str().ok_or(ChannelError::InvalidEncryptedData)?)?;
+        let encrypted_data = hex::decode(
+            encrypted["encryptedData"]
+                .as_str()
+                .ok_or(ChannelError::InvalidEncryptedData)?,
+        )?;
+        let auth_tag = hex::decode(
+            encrypted["authTag"]
+                .as_str()
+                .ok_or(ChannelError::InvalidEncryptedData)?,
+        )?;
 
         let nonce = Nonce::from_slice(&nonce);
 
@@ -193,7 +220,8 @@ impl Channel {
         combined_data.extend_from_slice(&encrypted_data);
         combined_data.extend_from_slice(&auth_tag);
 
-        let decrypted_data = cipher.decrypt(nonce, combined_data.as_ref())
+        let decrypted_data = cipher
+            .decrypt(nonce, combined_data.as_ref())
             .map_err(|e| ChannelError::DecryptionError(e.to_string()))?;
 
         let decrypted_string = String::from_utf8(decrypted_data)?;
@@ -201,12 +229,22 @@ impl Channel {
         serde_json::from_str(&decrypted_string).map_err(ChannelError::from)
     }
 
-    pub fn process_channel_message(&self, message: &serde_json::Value) -> Result<serde_json::Value, String> {
-        let data = message.as_array().and_then(|arr| arr.first()).ok_or("Failed to parse message")?;
+    pub fn process_channel_message(
+        &self,
+        message: &serde_json::Value,
+    ) -> Result<serde_json::Value, String> {
+        let data = message
+            .as_array()
+            .and_then(|arr| arr.first())
+            .ok_or("Failed to parse message")?;
 
-        let request_data = data.get("requestData").ok_or("Failed to parse message data")?;
+        let request_data = data
+            .get("requestData")
+            .ok_or("Failed to parse message data")?;
 
-        let network = data.get("network").ok_or("Failed to parse message network")?;
+        let network = data
+            .get("network")
+            .ok_or("Failed to parse message network")?;
 
         let data = if request_data.get("encryptedData").is_some() {
             self.decrypt_data(request_data)

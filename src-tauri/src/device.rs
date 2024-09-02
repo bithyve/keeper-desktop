@@ -1,7 +1,7 @@
-use bitcoin::bip32::DerivationPath;
-use bitcoin::Network;
 use crate::hwi::error::Error as HWIError;
 use crate::HWIClientState;
+use bitcoin::bip32::DerivationPath;
+use bitcoin::Network;
 use serde_json::json;
 
 pub enum ScriptType {

@@ -4,19 +4,19 @@
 mod channel;
 mod device;
 mod hwi;
-use channel::Channel;
-use device::get_xpub;
-use hwi::interface::HWIClient;
-use hwi::implementations::binary_implementation::BinaryHWIImplementation;
-use hwi::types::{HWIBinaryExecutor, HWIDevice, HWIDeviceType};
-use hwi::error::Error;
-use std::str::FromStr;
-use std::sync::Mutex;
-use tauri::{Manager, State};
-use tauri::api::process::Command;
-use serde_json::json;
 use bitcoin::base64::{engine::general_purpose, Engine as _};
 use bitcoin::Address;
+use channel::Channel;
+use device::get_xpub;
+use hwi::error::Error;
+use hwi::implementations::binary_implementation::BinaryHWIImplementation;
+use hwi::interface::HWIClient;
+use hwi::types::{HWIBinaryExecutor, HWIDevice, HWIDeviceType};
+use serde_json::json;
+use std::str::FromStr;
+use std::sync::Mutex;
+use tauri::api::process::Command;
+use tauri::{Manager, State};
 
 pub struct HWIClientState {
     hwi: HWIClient<BinaryHWIImplementation<HWIBinaryExecutorImpl>>,
@@ -79,7 +79,8 @@ fn set_hwi_client(
         Some(&fingerprint),
         false,
         network,
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
     state.hwi = Some(HWIClientState {
         hwi: client,
         device_type,
@@ -105,8 +106,14 @@ fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
         }
     });
 
-    state.channel
-        .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
+    state
+        .channel
+        .emit(
+            "CHANNEL_MESSAGE",
+            event_data,
+            false,
+            Some(&hwi_state.network.to_string()),
+        )
         .map_err(|e| e.to_string())
 }
 
@@ -125,9 +132,15 @@ fn device_healthcheck(state: State<'_, AppState>) -> Result<(), String> {
             }
         }
     });
-    
-    state.channel
-        .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
+
+    state
+        .channel
+        .emit(
+            "CHANNEL_MESSAGE",
+            event_data,
+            false,
+            Some(&hwi_state.network.to_string()),
+        )
         .map_err(|e| e.to_string())
 }
 
@@ -135,7 +148,10 @@ fn device_healthcheck(state: State<'_, AppState>) -> Result<(), String> {
 fn sign_tx(state: State<'_, AppState>, psbt: String) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let signed_psbt = hwi_state.hwi.sign_tx(&bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
+    let signed_psbt = hwi_state
+        .hwi
+        .sign_tx(&bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())?;
     let event_data = json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
@@ -148,16 +164,29 @@ fn sign_tx(state: State<'_, AppState>, psbt: String) -> Result<(), String> {
         }
     });
 
-    state.channel
-        .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
+    state
+        .channel
+        .emit(
+            "CHANNEL_MESSAGE",
+            event_data,
+            false,
+            Some(&hwi_state.network.to_string()),
+        )
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn register_multisig(state: State<'_, AppState>, descriptor: String, expected_address: String) -> Result<(), String> {
+fn register_multisig(
+    state: State<'_, AppState>,
+    descriptor: String,
+    expected_address: String,
+) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let address = hwi_state.hwi.display_address_with_desc(&descriptor).map_err(|e| e.to_string())?;
+    let address = hwi_state
+        .hwi
+        .display_address_with_desc(&descriptor)
+        .map_err(|e| e.to_string())?;
     if address.address != Address::from_str(&expected_address).map_err(|e| e.to_string())? {
         return Err("Address received from device does not match the expected address".to_string());
     }
@@ -173,8 +202,14 @@ fn register_multisig(state: State<'_, AppState>, descriptor: String, expected_ad
         }
     });
 
-    state.channel
-        .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
+    state
+        .channel
+        .emit(
+            "CHANNEL_MESSAGE",
+            event_data,
+            false,
+            Some(&hwi_state.network.to_string()),
+        )
         .map_err(|e| e.to_string())
 }
 
@@ -182,7 +217,10 @@ fn register_multisig(state: State<'_, AppState>, descriptor: String, expected_ad
 fn verify_address(state: State<'_, AppState>, descriptor: String) -> Result<(), String> {
     let state = state.lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let address = hwi_state.hwi.display_address_with_desc(&descriptor).map_err(|e| e.to_string())?;
+    let address = hwi_state
+        .hwi
+        .display_address_with_desc(&descriptor)
+        .map_err(|e| e.to_string())?;
     let event_data = json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
@@ -194,9 +232,15 @@ fn verify_address(state: State<'_, AppState>, descriptor: String) -> Result<(), 
             }
         }
     });
-    
-    state.channel
-        .emit("CHANNEL_MESSAGE", event_data, false, Some(&hwi_state.network.to_string()))
+
+    state
+        .channel
+        .emit(
+            "CHANNEL_MESSAGE",
+            event_data,
+            false,
+            Some(&hwi_state.network.to_string()),
+        )
         .map_err(|e| e.to_string())
 }
 

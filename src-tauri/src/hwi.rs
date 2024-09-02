@@ -1,4 +1,4 @@
 pub mod error;
-pub mod types;
-pub mod interface;
 pub mod implementations;
+pub mod interface;
+pub mod types;

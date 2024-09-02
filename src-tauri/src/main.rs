@@ -204,6 +204,7 @@ fn main() {
     env_logger::init();
     tauri::Builder::default()
         .setup(|app| {
+            // TODO: Open app with an error if connection to the channel fails
             let channel = Channel::new(app.handle());
             // TODO: For Linux we might need to install udev rules here or with a command for the interface.
             let app_state = AppStateInner { channel, hwi: None };

@@ -1,18 +1,15 @@
 use rust_socketio::{ClientBuilder, Payload, Event};
 use rust_socketio::client::Client;
 use serde_json::json;
-use aes::Aes256;
-use block_modes::{BlockMode, Cbc};
-use block_modes::block_padding::Pkcs7;
+use aes_gcm::aead::{Aead, KeyInit, OsRng};
+use aes_gcm::aead::rand_core::RngCore;
+use aes_gcm::{Aes256Gcm, Key, Nonce};
 use tauri::Manager;
 use sha2::{Sha256, Digest};
-use rand::Rng;
 use hex;
 use log::{info, error, warn};
 use thiserror::Error;
 use std::ops::Drop;
-
-type Aes256Cbc = Cbc<Aes256, Pkcs7>;
 
 const URL: &str = "https://keeper-channel.herokuapp.com/";
 
@@ -136,7 +133,8 @@ impl Channel {
     /// 
     /// Returns the generated encryption key
     pub fn generate_encryption_key(&mut self) -> Result<String, ChannelError> {
-        let random_bytes: [u8; 32] = rand::thread_rng().gen();
+        let mut random_bytes = [0u8; 32];
+        OsRng.fill_bytes(&mut random_bytes);
         let key = hex::encode(random_bytes);
         let room = hex::encode(Sha256::digest(&key));
         self.encryption_key = Some(key.clone());
@@ -147,41 +145,55 @@ impl Channel {
         Ok(key)
     }
 
-    /// Encrypts the provided data using AES-256-CBC
+    /// Encrypts the provided data using AES-256-GCM
     /// 
-    /// Returns a JSON object containing the IV and encrypted data
+    /// Returns a JSON object containing the iv, encrypted data, and authTag
     fn encrypt_data(&self, data: serde_json::Value) -> Result<serde_json::Value, ChannelError> {
         let encryption_key = self.encryption_key.as_ref().ok_or(ChannelError::NoEncryptionKey)?;
         let key_bytes = hex::decode(encryption_key)?;
 
-        let mut iv = [0u8; 16];
-        rand::thread_rng().fill(&mut iv);
+        let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
+        let cipher = Aes256Gcm::new(key);
 
-        let cipher = Aes256Cbc::new_from_slices(&key_bytes, &iv)
+        let mut nonce_bytes = [0u8; 12];
+        OsRng.fill_bytes(&mut nonce_bytes);
+        let nonce = Nonce::from_slice(&nonce_bytes); // Use the variable here
+        let data = data.to_string();
+        let plaintext = data.as_bytes();
+
+        let ciphertext_with_tag = cipher.encrypt(nonce, plaintext)
             .map_err(|e| ChannelError::EncryptionError(e.to_string()))?;
 
-        let encrypted_data = cipher.encrypt_vec(data.to_string().as_bytes());
+        let (ciphertext, auth_tag) = ciphertext_with_tag.split_at(ciphertext_with_tag.len() - 16);
 
         Ok(json!({
-            "iv": hex::encode(iv),
-            "encryptedData": hex::encode(encrypted_data)
+            "iv": hex::encode(nonce),
+            "encryptedData": hex::encode(ciphertext),
+            "authTag": hex::encode(auth_tag)
         }))
     }
 
     /// Decrypts the provided encrypted data
     /// 
-    /// Expects a JSON object containing the IV and encrypted data
+    /// Expects a JSON object containing the iv, encrypted data, and authTag
     pub fn decrypt_data(&self, encrypted: &serde_json::Value) -> Result<serde_json::Value, ChannelError> {
         let encryption_key = self.encryption_key.as_ref().ok_or(ChannelError::NoEncryptionKey)?;
         let key_bytes = hex::decode(encryption_key)?;
 
-        let iv = hex::decode(encrypted["iv"].as_str().ok_or(ChannelError::InvalidIV)?)?;
+        let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
+        let cipher = Aes256Gcm::new(key);
+
+        let nonce = hex::decode(encrypted["iv"].as_str().ok_or(ChannelError::InvalidIV)?)?;
         let encrypted_data = hex::decode(encrypted["encryptedData"].as_str().ok_or(ChannelError::InvalidEncryptedData)?)?;
+        let auth_tag = hex::decode(encrypted["authTag"].as_str().ok_or(ChannelError::InvalidEncryptedData)?)?;
 
-        let cipher = Aes256Cbc::new_from_slices(&key_bytes, &iv)
-            .map_err(|e| ChannelError::DecryptionError(e.to_string()))?;
+        let nonce = Nonce::from_slice(&nonce);
 
-        let decrypted_data = cipher.decrypt_vec(&encrypted_data)
+        let mut combined_data = Vec::with_capacity(encrypted_data.len() + auth_tag.len());
+        combined_data.extend_from_slice(&encrypted_data);
+        combined_data.extend_from_slice(&auth_tag);
+
+        let decrypted_data = cipher.decrypt(nonce, combined_data.as_ref())
             .map_err(|e| ChannelError::DecryptionError(e.to_string()))?;
 
         let decrypted_string = String::from_utf8(decrypted_data)?;

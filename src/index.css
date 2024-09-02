@@ -3,4 +3,5 @@ body, html {
   padding: 0;
   height: 100%;
   font-family: FiraSans, sans-serif;
+  background: linear-gradient(180deg, #2d6759 30%, #0f7a60 100%);
 }

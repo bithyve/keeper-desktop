@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import BaseModal from '../BaseModal/BaseModal';
 import { deviceContent, HWI_ACTION, HWI_DEVICES, HWIDevice, HWIDeviceType } from "../../helpers/devices";
 import styles from './DeviceActionModal.module.css';
 import baseStyles from "../BaseModal/BaseModal.module.css";
 import loader from '../../assets/loader.svg';
-import hwiService from '../../services/hwiService';
 import verifyAddressIcon from '../../assets/verify-address-icon.svg';
+import { useDeviceActions } from '../../hooks/useDeviceActions';
 
 interface DeviceActionModalProps {
   isOpen: boolean;
@@ -39,59 +38,15 @@ const DeviceActionModal = ({
   onActionSuccess,
   onError,
 }: DeviceActionModalProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleContinue = async () => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 100));
-    try {
-      switch (actionType) {
-        case 'connect':
-          const devices = await hwiService.fetchDevices(deviceType);
-          onConnectResult(devices);
-          break;
-        case 'shareXpubs':
-          await hwiService.shareXpubs();
-          onActionSuccess();
-          break;
-        case 'healthCheck':
-          await hwiService.performHealthCheck();
-          onActionSuccess();
-          break;
-        case 'signTx':
-          if (!psbt) {
-            onError('PSBT is required');
-            return;
-          }
-          await hwiService.signTx(psbt);
-          onActionSuccess();
-          break;
-        case 'registerMultisig':
-          if (!descriptor) {
-            onError('Descriptor is required');
-            return;
-          }
-          await hwiService.registerMultisig(descriptor);
-          onActionSuccess();
-          break;
-        case 'verifyAddress':
-          if (!descriptor) {
-            onError("Descriptor is required");
-            return;
-          }
-          await hwiService.verifyAddress(descriptor);
-          onActionSuccess();
-          break;
-        default:
-          throw new Error('Unsupported action type');
-      }
-    } catch (error) {
-      console.error(`Error performing ${actionType} action:`, error);
-      onError((error as any).toString());
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { isLoading, handleContinue } = useDeviceActions({
+    deviceType,
+    actionType,
+    psbt,
+    descriptor,
+    onConnectResult,
+    onActionSuccess,
+    onError,
+  });
 
   const content = deviceContent[deviceType];
   const hasListItems = content.content[actionType].list.length > 0;
@@ -114,7 +69,7 @@ const DeviceActionModal = ({
         className={`${baseStyles.title} ${styles.title}`}
         style={{
           textAlign: hasListItems ? "left" : "center",
-          marginLeft: hasListItems ? "25px" : "0",
+          marginLeft: hasListItems ? "25px" : "7%",
         }}
       >
         {actionTitle(deviceType)[actionType]}
@@ -125,7 +80,7 @@ const DeviceActionModal = ({
         className={`${baseStyles.text} ${styles.text}`}
         style={{
           textAlign: hasListItems ? "left" : "center",
-          marginLeft: hasListItems ? "25px" : "0",
+          marginLeft: hasListItems ? "25px" : "7%",
         }}
       >
         {content.content[actionType].text}

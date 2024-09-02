@@ -34,12 +34,16 @@ const hwiService = {
     await invoke<void>("sign_tx", { psbt });
   },
 
-  registerMultisig: async (descriptor: string): Promise<void> => {
-    await invoke<void>("register_multisig", { descriptor });
+  registerMultisig: async (descriptor: string, expectedAddress: string): Promise<void> => {
+    await invoke<void>("register_multisig", { descriptor, expectedAddress });
   },
 
   verifyAddress: async (descriptor: string): Promise<void> => {
     await invoke<void>("verify_address", { descriptor });
+  },
+
+  sendPin: async (pin: string): Promise<void> => {
+    await invoke<void>("send_pin", { pin });
   },
 };
 

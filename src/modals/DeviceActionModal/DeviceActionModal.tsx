@@ -1,10 +1,16 @@
-import BaseModal from '../BaseModal/BaseModal';
-import { deviceContent, HWI_ACTION, HWI_DEVICES, HWIDevice, HWIDeviceType } from "../../helpers/devices";
-import styles from './DeviceActionModal.module.css';
+import BaseModal from "../BaseModal/BaseModal";
+import {
+  deviceContent,
+  HWI_ACTION,
+  HWI_DEVICES,
+  HWIDevice,
+  HWIDeviceType,
+} from "../../helpers/devices";
+import styles from "./DeviceActionModal.module.css";
 import baseStyles from "../BaseModal/BaseModal.module.css";
-import loader from '../../assets/loader.svg';
-import verifyAddressIcon from '../../assets/verify-address-icon.svg';
-import { useDeviceActions } from '../../hooks/useDeviceActions';
+import loader from "../../assets/loader.svg";
+import verifyAddressIcon from "../../assets/verify-address-icon.svg";
+import { useDeviceActions } from "../../hooks/useDeviceActions";
 
 interface DeviceActionModalProps {
   isOpen: boolean;
@@ -56,7 +62,7 @@ const DeviceActionModal = ({
 
   const isVerifyAddress = actionType === "verifyAddress";
   const iconSrc = isVerifyAddress ? verifyAddressIcon : content.icon;
-  const iconStyle = isVerifyAddress ? { width: '203px', height: '157px' } : {};
+  const iconStyle = isVerifyAddress ? { width: "203px", height: "157px" } : {};
 
   const modalContent = {
     image: (
@@ -114,11 +120,7 @@ const DeviceActionModal = ({
   };
 
   return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={onClose}
-      modalContent={modalContent}
-    />
+    <BaseModal isOpen={isOpen} onClose={onClose} modalContent={modalContent} />
   );
 };
 

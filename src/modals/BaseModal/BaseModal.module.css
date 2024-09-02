@@ -12,7 +12,7 @@
 }
 
 .modalContent {
-  background-color: #F7F2EC;
+  background-color: #f7f2ec;
   padding: 50px 20px 20px;
   border-radius: 12px;
   width: 85%;
@@ -46,14 +46,14 @@
 
 .text {
   font-size: 15px;
-  color: #3E524D;
+  color: #3e524d;
   margin: 0 7%;
   font-weight: light;
   line-height: 20px;
 }
 
 .continueButton {
-  background-color: #2D6759;
+  background-color: #2d6759;
   color: #fff;
   border: none;
   padding: 15px 0;
@@ -79,7 +79,7 @@
 }
 
 .modalContent li {
-  color: #3E524D;
+  color: #3e524d;
   position: relative;
   padding-left: 15px;
   margin: 20px 0;
@@ -89,13 +89,13 @@
 }
 
 .modalContent li::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 50%;
   transform: translateY(-50%);
   width: 5px;
   height: 5px;
-  background-color: #073B36;
+  background-color: #073b36;
   border-radius: 50%;
 }

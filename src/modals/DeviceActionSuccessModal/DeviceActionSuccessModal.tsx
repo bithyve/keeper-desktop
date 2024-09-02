@@ -1,8 +1,8 @@
-import BaseModal from '../BaseModal/BaseModal';
-import styles from './DeviceActionSuccessModal.module.css';
-import baseStyles from '../BaseModal/BaseModal.module.css';
-import successIcon from '../../assets/hwi-success-icon.svg';
-import { HWI_ACTION, HWI_DEVICES, HWIDeviceType } from '../../helpers/devices';
+import BaseModal from "../BaseModal/BaseModal";
+import styles from "./DeviceActionSuccessModal.module.css";
+import baseStyles from "../BaseModal/BaseModal.module.css";
+import successIcon from "../../assets/hwi-success-icon.svg";
+import { HWI_ACTION, HWI_DEVICES, HWIDeviceType } from "../../helpers/devices";
 
 interface DeviceActionSuccessModalProps {
   isOpen: boolean;

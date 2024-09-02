@@ -1,4 +1,4 @@
-import BaseModal from '../BaseModal/BaseModal';
+import BaseModal from "../BaseModal/BaseModal";
 import styles from "./DeviceNotFoundModal.module.css";
 import baseStyles from "../BaseModal/BaseModal.module.css";
 import DeviceNotFoundIcon from "../../assets/device-not-found-icon.svg";
@@ -45,11 +45,7 @@ const DeviceNotFoundModal = ({
   };
 
   return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={onClose}
-      modalContent={modalContent}
-    />
+    <BaseModal isOpen={isOpen} onClose={onClose} modalContent={modalContent} />
   );
 };
 

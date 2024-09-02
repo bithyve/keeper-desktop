@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import BaseModal from "../BaseModal/BaseModal";
 import styles from "./ErrorModal.module.css";
 import baseStyles from "../BaseModal/BaseModal.module.css";

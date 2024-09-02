@@ -3,7 +3,7 @@ import { HWIDevice, HWIDeviceType } from "../helpers/devices";
 
 const hwiService = {
   fetchDevices: async (
-    deviceType: HWIDeviceType | null = null
+    deviceType: HWIDeviceType | null = null,
   ): Promise<HWIDevice[]> => {
     const devices = await invoke<HWIDevice[]>("hwi_enumerate");
     return devices
@@ -17,7 +17,7 @@ const hwiService = {
   setHWIClient: async (
     fingerprint: string,
     deviceType: string,
-    network: string
+    network: string,
   ): Promise<void> => {
     await invoke<void>("set_hwi_client", { fingerprint, deviceType, network });
   },
@@ -34,7 +34,10 @@ const hwiService = {
     await invoke<void>("sign_tx", { psbt });
   },
 
-  registerMultisig: async (descriptor: string, expectedAddress: string): Promise<void> => {
+  registerMultisig: async (
+    descriptor: string,
+    expectedAddress: string,
+  ): Promise<void> => {
     await invoke<void>("register_multisig", { descriptor, expectedAddress });
   },
 

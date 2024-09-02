@@ -1,4 +1,4 @@
-import BaseModal from '../BaseModal/BaseModal';
+import BaseModal from "../BaseModal/BaseModal";
 import styles from "./MultipleDevicesModal.module.css";
 import baseStyles from "../BaseModal/BaseModal.module.css";
 import MultipleDevicesIcon from "../../assets/multiple-devices-error-icon.svg";
@@ -45,11 +45,7 @@ const MultipleDevicesModal = ({
   };
 
   return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={onClose}
-      modalContent={modalContent}
-    />
+    <BaseModal isOpen={isOpen} onClose={onClose} modalContent={modalContent} />
   );
 };
 

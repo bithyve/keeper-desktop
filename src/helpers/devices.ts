@@ -68,7 +68,7 @@ interface HWIDevice {
 
 interface DeviceContent {
   icon: string;
-  content: Record<HWI_ACTION, {text: string, list: string[]}>;
+  content: Record<HWI_ACTION, { text: string; list: string[] }>;
 }
 
 type HWIDeviceType = keyof typeof HWI_DEVICES;
@@ -196,4 +196,12 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
   // },
 };
 
-export { HWI_DEVICES, HWI_ACTIONS, deviceContent, type HWI_ACTION , type HWIDeviceType, type HWIDevice, type NetworkType };
+export {
+  HWI_DEVICES,
+  HWI_ACTIONS,
+  deviceContent,
+  type HWI_ACTION,
+  type HWIDeviceType,
+  type HWIDevice,
+  type NetworkType,
+};

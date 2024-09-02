@@ -30,10 +30,11 @@ export const useDeviceActions = ({
     await new Promise((resolve) => setTimeout(resolve, 100));
     try {
       switch (actionType) {
-        case "connect":
+        case "connect": {
           const devices = await hwiService.fetchDevices(deviceType);
           onConnectResult(devices);
           break;
+        }
         case "shareXpubs":
           await hwiService.shareXpubs();
           onActionSuccess();
@@ -71,7 +72,7 @@ export const useDeviceActions = ({
       }
     } catch (error) {
       console.error(`Error performing ${actionType} action:`, error);
-      onError((error as any).toString());
+      onError((error as any).toString()); // eslint-disable-line @typescript-eslint/no-explicit-any
     } finally {
       setIsLoading(false);
     }

@@ -3,7 +3,7 @@
   min-height: 100vh;
   height: auto;
   display: flex;
-  color: #FDF7F0;
+  color: #fdf7f0;
   padding: 32px 54px;
   box-sizing: border-box;
 }
@@ -81,7 +81,7 @@
 
 .qrContainer {
   width: 45%;
-  background-color: #FDF7F0;
+  background-color: #fdf7f0;
   border-radius: 10px;
   padding: 20px;
   display: flex;
@@ -111,7 +111,7 @@
 .scanMe {
   font-size: 18px;
   font-weight: 600;
-  color: #FDF7F0;
+  color: #fdf7f0;
   margin-top: 22px;
   margin-bottom: 16px;
 }
@@ -123,7 +123,7 @@
   font-size: 14px;
   font-style: normal;
   font-weight: 200;
-  line-height: 20px; 
+  line-height: 20px;
 }
 
 .qrImage {
@@ -144,7 +144,9 @@
   align-items: center;
   justify-content: center;
   z-index: 1;
-  transition: transform 0.3s ease, background-color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    background-color 0.3s ease;
   border-radius: 50%;
 }
 

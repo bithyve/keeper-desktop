@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
-import styles from './BaseModal.module.css';
+import { ReactNode } from "react";
+import styles from "./BaseModal.module.css";
 
 interface BaseModalProps {
   isOpen: boolean;
@@ -12,11 +12,7 @@ interface BaseModalProps {
   };
 }
 
-const BaseModal = ({
-  isOpen,
-  onClose,
-  modalContent,
-}: BaseModalProps) => {
+const BaseModal = ({ isOpen, onClose, modalContent }: BaseModalProps) => {
   if (!isOpen) return null;
 
   return (
@@ -25,9 +21,7 @@ const BaseModal = ({
         <button className={styles.closeButton} onClick={onClose}>
           ×
         </button>
-        <div className={styles.modalImage}>
-          {modalContent.image}
-        </div>
+        <div className={styles.modalImage}>{modalContent.image}</div>
         <div className={styles.modalBody}>
           {modalContent.title}
           {modalContent.content}

@@ -12,7 +12,11 @@ interface TrezorPinModalProps {
   onSuccess: () => void;
 }
 
-const TrezorPinModal: React.FC<TrezorPinModalProps> = ({ isOpen, onClose, onSuccess }) => {
+const TrezorPinModal = ({
+  isOpen,
+  onClose,
+  onSuccess,
+}: TrezorPinModalProps) => {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
 
@@ -29,7 +33,8 @@ const TrezorPinModal: React.FC<TrezorPinModalProps> = ({ isOpen, onClose, onSucc
     try {
       await hwiService.sendPin(pin);
       onSuccess();
-    } catch (error) {
+    } catch {
+      // TODO: Show exact error
       return showError("Enter PIN failed");
     }
   };

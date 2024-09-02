@@ -3,22 +3,34 @@ import keeperLogo from "../../assets/keeper-with-slogan-logo.png";
 import instructionsIcon from "../../assets/instructions-icon.svg";
 import refreshIcon from "../../assets/refresh.svg";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { invoke } from '@tauri-apps/api/tauri';
-import { listen } from '@tauri-apps/api/event';
-import QRCode from 'qrcode.react';
-import useModalState from '../../hooks/useModalState';
-import { HWI_ACTION, HWIDevice, HWIDeviceType, NetworkType } from "../../helpers/devices";
+import { invoke } from "@tauri-apps/api/tauri";
+import { listen } from "@tauri-apps/api/event";
+import QRCode from "qrcode.react";
+import useModalState from "../../hooks/useModalState";
+import {
+  HWI_ACTION,
+  HWIDevice,
+  HWIDeviceType,
+  NetworkType,
+} from "../../helpers/devices";
 import ModalsManager from "../../modals/ModalManager";
 import hwiService from "../../services/hwiService";
 
+interface ChannelMessagePayload {
+  data: {
+    signerType: string;
+    action: string;
+    psbt?: { serializedPSBT: string };
+    descriptorString?: string;
+    firstExtAdd?: string;
+  };
+  network: string;
+}
+
 const ConnectScreen = () => {
-  const {
-    openModal,
-    openModalHandler,
-    closeModalHandler,
-  } = useModalState();
+  const { openModal, openModalHandler, closeModalHandler } = useModalState();
 
   const [deviceType, setDeviceType] = useState<HWIDeviceType | null>(null);
   const [currentAction, setCurrentAction] = useState<HWI_ACTION>("connect");
@@ -31,29 +43,36 @@ const ConnectScreen = () => {
 
   const handleConnectResult = async (devices: HWIDevice[]) => {
     if (devices.length > 1) {
-      openModalHandler('multipleDevices');
+      openModalHandler("multipleDevices");
     } else if (devices.length === 0) {
-      openModalHandler('notFound');
+      openModalHandler("notFound");
     } else {
       if (deviceType && network) {
-        await hwiService.setHWIClient(devices[0].fingerprint, deviceType, network.toLowerCase());
+        await hwiService.setHWIClient(
+          devices[0].fingerprint,
+          deviceType,
+          network.toLowerCase(),
+        );
         if (devices[0].needs_pin_sent) {
-          openModalHandler('pin');
+          openModalHandler("pin");
         } else {
-          openModalHandler('deviceActionSuccess');
+          openModalHandler("deviceActionSuccess");
         }
       }
     }
   };
 
   const handleActionSuccess = () => {
-    openModalHandler('deviceActionSuccess');
+    openModalHandler("deviceActionSuccess");
   };
 
-  const handleError = (error: string) => {
-    setErrorMessage(error);
-    openModalHandler('error');
-  };
+  const handleError = useCallback(
+    (error: string) => {
+      setErrorMessage(error);
+      openModalHandler("error");
+    },
+    [openModalHandler],
+  );
 
   const { data: channelSecret, refetch: regenerateQR } = useQuery({
     queryKey: ["channelSecret"],
@@ -63,48 +82,68 @@ const ConnectScreen = () => {
   });
 
   useEffect(() => {
-    const unsubscribe = listen("channel-message", async (channelMessage: any) => {
-      const { data, network} = channelMessage.payload;
-      console.log("channelMessage", data);
-      setDeviceType(data.signerType.toLowerCase() as HWIDeviceType);
-      switch (data.action) {
-        case "ADD_DEVICE":
-          setActionType("shareXpubs");
-          break;
-        case "HEALTH_CHECK":
-          setActionType("healthCheck");
-          break;
-        case "SIGN_TX":
-          setActionType("signTx");
-          setPsbt(data.psbt.serializedPSBT);
-          break;
-        case "REGISTER_MULTISIG":
-          setActionType("registerMultisig");
-          const descriptor = data.descriptorString.replace(/\*\*/g, "0/0");
-          setDescriptor(descriptor);
-          setExpectedAddress(data.firstExtAdd);
-          break;
-        case "VERIFY_ADDRESS":
-          setActionType("verifyAddress");
-          setDescriptor(data.descriptorString);
-          break;
-      }
-      setNetwork(network as NetworkType);
-      setCurrentAction("connect");
-      openModalHandler('deviceAction');
-    });
+    const unsubscribe = listen(
+      "channel-message",
+      async (channelMessage: { payload: ChannelMessagePayload }) => {
+        const { data, network } = channelMessage.payload;
+        console.log("channelMessage", data);
+        setDeviceType(data.signerType.toLowerCase() as HWIDeviceType);
+        switch (data.action) {
+          case "ADD_DEVICE":
+            setActionType("shareXpubs");
+            break;
+          case "HEALTH_CHECK":
+            setActionType("healthCheck");
+            break;
+          case "SIGN_TX":
+            setActionType("signTx");
+            if (data.psbt) {
+              setPsbt(data.psbt.serializedPSBT);
+            } else {
+              handleError("PSBT was not provided");
+            }
+            break;
+          case "REGISTER_MULTISIG":
+            setActionType("registerMultisig");
+            if (data.descriptorString) {
+              setDescriptor(data.descriptorString.replace(/\*\*/g, "0/0"));
+            } else {
+              handleError("Descriptor was not provided");
+            }
+            if (data.firstExtAdd) {
+              setExpectedAddress(data.firstExtAdd);
+            } else {
+              handleError("Expected address was not provided");
+            }
+            break;
+          case "VERIFY_ADDRESS":
+            setActionType("verifyAddress");
+            if (data.descriptorString) {
+              setDescriptor(data.descriptorString);
+            } else {
+              handleError("Descriptor is required");
+            }
+            break;
+          default:
+            handleError("Unsupported action received");
+        }
+        setNetwork(network as NetworkType);
+        setCurrentAction("connect");
+        openModalHandler("deviceAction");
+      },
+    );
 
     return () => {
-      unsubscribe.then(f => f());
+      unsubscribe.then((f) => f());
     };
-  }, []);
+  }, [openModalHandler, handleError]);
 
   return (
     <div className={styles.connectScreen}>
       <div className={styles.leftSection}>
         <img src={keeperLogo} alt="Keeper Logo" className={styles.keeperLogo} />
         <h1 className={styles.title}>
-          Welcome to Bitcoin Keeper's Desktop App
+          Welcome to Bitcoin Keeper&apos;s Desktop App
         </h1>
         <div className={styles.instructionsContainer}>
           <h3 className={styles.instructionsTitle}>
@@ -118,7 +157,7 @@ const ConnectScreen = () => {
           <ul className={styles.instructionsList}>
             <li>
               You can add devices, register vaults and sign transactions using
-              Keeper's desktop app.
+              Keeper&apos;s desktop app.
             </li>
             <li>
               Open the QR scanner from the Keeper mobile app and scan the QR

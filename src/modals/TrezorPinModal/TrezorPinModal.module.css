@@ -15,8 +15,8 @@
   width: 60px;
   height: 46px;
   font-size: 24px;
-  background-color: #FDF7F0;
-  border: 1px solid #D4D4D4;
+  background-color: #fdf7f0;
+  border: 1px solid #d4d4d4;
   border-radius: 5px;
   cursor: pointer;
   display: flex;
@@ -26,9 +26,9 @@
 }
 
 .pinButton::after {
-  content: '•';
+  content: "•";
   font-size: 24px;
-  color: #24312E;
+  color: #24312e;
 }
 
 .pinButton:hover {
@@ -58,7 +58,7 @@
 }
 
 .error {
-  background-color: #E54545;
+  background-color: #e54545;
   color: white;
   font-size: 12px;
   padding: 10px 20px;

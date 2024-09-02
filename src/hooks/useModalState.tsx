@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-type ModalType =
+export type ModalType =
   | "deviceAction"
   | "deviceActionSuccess"
   | "notFound"

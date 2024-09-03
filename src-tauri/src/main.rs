@@ -13,7 +13,7 @@ use hwi::implementations::binary_implementation::BinaryHWIImplementation;
 use hwi::interface::HWIClient;
 use hwi::types::{HWIBinaryExecutor, HWIDevice, HWIDeviceType};
 use log::{error, warn};
-use serde_json::json;
+use serde_json::{json, Value};
 use std::str::FromStr;
 use tauri::api::process::Command;
 use tauri::{Manager, State};
@@ -81,6 +81,21 @@ fn generate_encryption_key(state: State<'_, AppState>) -> Result<String, String>
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn emit_to_channel(state: State<'_, AppState>, event_data: Value) -> Result<(), String> {
+    let state = state.try_lock().map_err(|e| e.to_string())?;
+    let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
+    state
+        .channel
+        .emit(
+            "CHANNEL_MESSAGE",
+            event_data,
+            false,
+            Some(&hwi_state.network.to_string()),
+        )
+        .map_err(|e| e.to_string())
+}
+
 // ==================== HWI Commands ====================
 
 #[tauri::command]
@@ -117,12 +132,12 @@ fn set_hwi_client(
 }
 
 #[tauri::command]
-fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
-    let state = state.try_lock().map_err(|e| e.to_string())?;
+async fn hwi_get_xpubs(state: State<'_, AppState>) -> Result<Value, String> {
+    let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let xpub_data = get_xpub(hwi_state).map_err(|e| e.to_string())?;
 
-    let event_data = json!({
+    Ok(json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
             "responseData": {
@@ -130,26 +145,16 @@ fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
                 "data": xpub_data
             }
         }
-    });
-
-    state
-        .channel
-        .emit(
-            "CHANNEL_MESSAGE",
-            event_data,
-            false,
-            Some(&hwi_state.network.to_string()),
-        )
-        .map_err(|e| e.to_string())
+    }))
 }
 
 #[tauri::command]
-fn device_healthcheck(state: State<'_, AppState>) -> Result<(), String> {
-    let state = state.try_lock().map_err(|e| e.to_string())?;
+async fn hwi_healthcheck(state: State<'_, AppState>) -> Result<Value, String> {
+    let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let xpub_data = get_xpub(hwi_state).map_err(|e| e.to_string())?;
 
-    let event_data = json!({
+    Ok(json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
             "responseData": {
@@ -157,28 +162,19 @@ fn device_healthcheck(state: State<'_, AppState>) -> Result<(), String> {
                 "data": xpub_data
             }
         }
-    });
-
-    state
-        .channel
-        .emit(
-            "CHANNEL_MESSAGE",
-            event_data,
-            false,
-            Some(&hwi_state.network.to_string()),
-        )
-        .map_err(|e| e.to_string())
+    }))
 }
 
 #[tauri::command]
-fn sign_tx(state: State<'_, AppState>, psbt: String) -> Result<(), String> {
-    let state = state.try_lock().map_err(|e| e.to_string())?;
+async fn hwi_sign_tx(state: State<'_, AppState>, psbt: String) -> Result<Value, String> {
+    let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let signed_psbt = hwi_state
         .hwi
         .sign_tx(&bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?)
         .map_err(|e| e.to_string())?;
-    let event_data = json!({
+
+    Ok(json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
             "responseData": {
@@ -188,26 +184,16 @@ fn sign_tx(state: State<'_, AppState>, psbt: String) -> Result<(), String> {
                 }
             }
         }
-    });
-
-    state
-        .channel
-        .emit(
-            "CHANNEL_MESSAGE",
-            event_data,
-            false,
-            Some(&hwi_state.network.to_string()),
-        )
-        .map_err(|e| e.to_string())
+    }))
 }
 
 #[tauri::command]
-fn register_multisig(
+async fn hwi_register_multisig(
     state: State<'_, AppState>,
     descriptor: String,
     expected_address: String,
-) -> Result<(), String> {
-    let state = state.try_lock().map_err(|e| e.to_string())?;
+) -> Result<Value, String> {
+    let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let address = hwi_state
         .hwi
@@ -216,7 +202,7 @@ fn register_multisig(
     if address.address != Address::from_str(&expected_address).map_err(|e| e.to_string())? {
         return Err("Address received from device does not match the expected address".to_string());
     }
-    let event_data = json!({
+    Ok(json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
             "responseData": {
@@ -226,26 +212,16 @@ fn register_multisig(
                 }
             }
         }
-    });
-
-    state
-        .channel
-        .emit(
-            "CHANNEL_MESSAGE",
-            event_data,
-            false,
-            Some(&hwi_state.network.to_string()),
-        )
-        .map_err(|e| e.to_string())
+    }))
 }
 
 #[tauri::command]
-fn verify_address(
+async fn hwi_verify_address(
     state: State<'_, AppState>,
     descriptor: String,
     expected_address: String,
-) -> Result<(), String> {
-    let state = state.try_lock().map_err(|e| e.to_string())?;
+) -> Result<Value, String> {
+    let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let address = hwi_state
         .hwi
@@ -254,7 +230,7 @@ fn verify_address(
     if address.address != Address::from_str(&expected_address).map_err(|e| e.to_string())? {
         return Err("Address received from device does not match the expected address".to_string());
     }
-    let event_data = json!({
+    Ok(json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
             "responseData": {
@@ -264,22 +240,12 @@ fn verify_address(
                 }
             }
         }
-    });
-
-    state
-        .channel
-        .emit(
-            "CHANNEL_MESSAGE",
-            event_data,
-            false,
-            Some(&hwi_state.network.to_string()),
-        )
-        .map_err(|e| e.to_string())
+    }))
 }
 
 #[tauri::command]
-fn send_pin(state: State<'_, AppState>, pin: String) -> Result<(), String> {
-    let state = state.try_lock().map_err(|e| e.to_string())?;
+async fn hwi_send_pin(state: State<'_, AppState>, pin: String) -> Result<(), String> {
+    let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     hwi_state.hwi.send_pin(&pin).map_err(|e| e.to_string())
 }
@@ -318,12 +284,13 @@ fn main() {
             generate_encryption_key,
             hwi_enumerate,
             set_hwi_client,
-            share_xpubs,
-            device_healthcheck,
-            sign_tx,
-            register_multisig,
-            verify_address,
-            send_pin
+            hwi_get_xpubs,
+            hwi_healthcheck,
+            hwi_sign_tx,
+            hwi_register_multisig,
+            hwi_verify_address,
+            emit_to_channel,
+            hwi_send_pin
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

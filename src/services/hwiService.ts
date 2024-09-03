@@ -23,33 +23,44 @@ const hwiService = {
   },
 
   shareXpubs: async (): Promise<void> => {
-    await invoke<void>("share_xpubs");
+    const eventData = await invoke("hwi_get_xpubs");
+    await invoke("emit_to_channel", { eventData });
   },
 
   performHealthCheck: async (): Promise<void> => {
-    await invoke<void>("device_healthcheck");
+    const eventData = await invoke<void>("hwi_healthcheck");
+    await invoke<void>("emit_to_channel", { eventData });
   },
 
   signTx: async (psbt: string): Promise<void> => {
-    await invoke<void>("sign_tx", { psbt });
+    const eventData = await invoke<void>("hwi_sign_tx", { psbt });
+    await invoke<void>("emit_to_channel", { eventData });
   },
 
   registerMultisig: async (
     descriptor: string,
     expectedAddress: string,
   ): Promise<void> => {
-    await invoke<void>("register_multisig", { descriptor, expectedAddress });
+    const eventData = await invoke<void>("hwi_register_multisig", {
+      descriptor,
+      expectedAddress,
+    });
+    await invoke<void>("emit_to_channel", { eventData });
   },
 
   verifyAddress: async (
     descriptor: string,
     expectedAddress: string,
   ): Promise<void> => {
-    await invoke<void>("verify_address", { descriptor, expectedAddress });
+    const eventData = await invoke<void>("verify_address", {
+      descriptor,
+      expectedAddress,
+    });
+    await invoke<void>("emit_to_channel", { eventData });
   },
 
   sendPin: async (pin: string): Promise<void> => {
-    await invoke<void>("send_pin", { pin });
+    await invoke<void>("hwi_send_pin", { pin });
   },
 };
 

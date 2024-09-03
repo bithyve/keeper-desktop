@@ -76,4 +76,49 @@
   font-style: normal;
   font-weight: 500;
   line-height: 20px;
+  cursor:;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #e8e3dd;
+  box-shadow: 0 2px 8px rgba(45, 103, 89, 0.2);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+.btn.reconnect {
+  padding-bottom: 20px;
+}
+
+.btn.reconnect:disabled {
+  background-color: transparent;
+  cursor: default;
+}
+
+.errorMessage {
+  background-color: #f7f2ec;
+  color: #ff6b6b;
+  font-size: 16px;
+  margin-bottom: 25px;
+  text-align: center;
+  padding: 25px;
+  border-radius: 5px;
+  border: 1px solid #ff6b6b;
+}
+
+/* TODO: Move spinner to a shared component */
+.loadingSpinner {
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

@@ -7,8 +7,10 @@ use rust_socketio::{ClientBuilder, Event, Payload};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use std::ops::Drop;
+use std::time::Duration;
 use tauri::Manager;
 use thiserror::Error;
+use tokio::time::timeout;
 
 const URL: &str = "https://keeper-channel.herokuapp.com/";
 
@@ -38,6 +40,12 @@ pub enum ChannelError {
     Utf8Error(#[from] std::string::FromUtf8Error),
     #[error("Socket.IO error: {0}")]
     SocketIoError(String),
+    #[error("Connection timed out")]
+    ConnectionTimeout,
+}
+
+pub struct ChannelBuilder {
+    app_handle: tauri::AppHandle,
 }
 
 pub struct Channel {
@@ -46,48 +54,33 @@ pub struct Channel {
     pub encryption_key: Option<String>,
 }
 
+impl ChannelBuilder {
+    pub async fn build(self) -> Channel {
+        Channel::new(self.app_handle, 30).await
+    }
+}
+
 impl Channel {
-    /// Creates a new Channel instance with a connected Socket.IO client
-    pub fn new(app_handle: tauri::AppHandle) -> Self {
-        let client = ClientBuilder::new(URL)
-            .on(Event::Connect, |_, _| {
-                info!("Channel connected");
-            })
-            .on(Event::Error, |err, _| {
-                error!("Channel error: {:#?}", err);
-            }).on_any({
-                move |event, payload, _| {
-                    match payload {
-                        #[allow(deprecated)]
-                        Payload::String(str) => warn!("Received unexpected string: {}", str),
-                        Payload::Text(text) => {
-                            info!("Channel received event: {:?} with message: {:?}", event.as_str(), text);
-                            if event.as_str() == "CHANNEL_MESSAGE" {
-                                if let Ok(state) = app_handle.state::<crate::AppState>().try_lock() {
-                                    let text = serde_json::to_value(text).map_err(|_| "Failed to parse message as JSON");
-                                    if let Ok(text) = text {
-                                        match state.channel.process_channel_message(&text) {
-                                            Ok(processed_data) => {
-                                                if let Err(e) = app_handle.emit_all("channel-message", processed_data) {
-                                                    error!("Failed to emit channel-message event: {:?}, got error: {:?}", text, e);
-                                                }
-                                            },
-                                            Err(e) => error!("Error processing message: {}", e),
-                                        }
-                                    } else {
-                                        error!("Error converting text to JSON: {}", text.err().unwrap());
-                                    }
-                                }
-                            }
-                        },
-                        Payload::Binary(bin_data) => warn!("Received unexpected bytes: {:#?}", bin_data),
-                    }
-                }
-            })
-            .connect();
+    pub fn builder(app_handle: tauri::AppHandle) -> ChannelBuilder {
+        ChannelBuilder { app_handle }
+    }
+
+    pub async fn new(app_handle: tauri::AppHandle, timeout_secs: u64) -> Self {
+        let client = create_client_with_timeout(app_handle, timeout_secs).await;
+        if let Err(e) = &client {
+            error!("Error connecting to channel: {}", e);
+        }
 
         Channel {
             client: client.ok(),
+            room: None,
+            encryption_key: None,
+        }
+    }
+
+    pub fn new_empty() -> Self {
+        Channel {
+            client: None,
             room: None,
             encryption_key: None,
         }
@@ -262,4 +255,56 @@ impl Drop for Channel {
             error!("Error disconnecting channel on drop: {}", e);
         }
     }
+}
+
+async fn create_client_with_timeout(
+    app_handle: tauri::AppHandle,
+    timeout_secs: u64,
+) -> Result<Client, ChannelError> {
+    let client_future = tokio::task::spawn_blocking(move || create_client(app_handle));
+
+    match timeout(Duration::from_secs(timeout_secs), client_future).await {
+        Ok(result) => result.map_err(|e| ChannelError::SocketIoError(e.to_string()))?,
+        Err(_elapsed) => Err(ChannelError::ConnectionTimeout),
+    }
+}
+
+fn create_client(app_handle: tauri::AppHandle) -> Result<Client, ChannelError> {
+    ClientBuilder::new(URL)
+        .on(Event::Connect, |_, _| {
+            info!("Channel connected");
+        })
+        .on(Event::Error, |err, _| {
+            error!("Channel error: {:#?}", err);
+        }).on_any({
+            move |event, payload, _| {
+                match payload {
+                    #[allow(deprecated)]
+                    Payload::String(str) => warn!("Received unexpected string: {}", str),
+                    Payload::Text(text) => {
+                        info!("Channel received event: {:?} with message: {:?}", event.as_str(), text);
+                        if event.as_str() == "CHANNEL_MESSAGE" {
+                            if let Ok(state) = app_handle.state::<crate::AppState>().try_lock() {
+                                let text = serde_json::to_value(text).map_err(|_| "Failed to parse message as JSON");
+                                if let Ok(text) = text {
+                                    match state.channel.process_channel_message(&text) {
+                                        Ok(processed_data) => {
+                                            if let Err(e) = app_handle.emit_all("channel-message", processed_data) {
+                                                error!("Failed to emit channel-message event: {:?}, got error: {:?}", text, e);
+                                            }
+                                        },
+                                        Err(e) => error!("Error processing message: {}", e),
+                                    }
+                                } else {
+                                    error!("Error converting text to JSON: {}", text.err().unwrap());
+                                }
+                            }
+                        }
+                    },
+                    Payload::Binary(bin_data) => warn!("Received unexpected bytes: {:#?}", bin_data),
+                }
+            }
+        })
+        .connect()
+        .map_err(|e| ChannelError::SocketIoError(e.to_string()))
 }

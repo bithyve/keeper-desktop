@@ -12,11 +12,12 @@ use hwi::error::Error;
 use hwi::implementations::binary_implementation::BinaryHWIImplementation;
 use hwi::interface::HWIClient;
 use hwi::types::{HWIBinaryExecutor, HWIDevice, HWIDeviceType};
+use log::{error, warn};
 use serde_json::json;
 use std::str::FromStr;
-use std::sync::Mutex;
 use tauri::api::process::Command;
 use tauri::{Manager, State};
+use tokio::sync::Mutex;
 
 pub struct HWIClientState {
     hwi: HWIClient<BinaryHWIImplementation<HWIBinaryExecutorImpl>>,
@@ -36,20 +37,45 @@ pub type AppState = Mutex<AppStateInner>;
 // ==================== Channel Commands ====================
 
 #[tauri::command]
+async fn reconnect_channel(
+    app_handle: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<bool, String> {
+    let mut state = state.lock().await;
+    if state.channel.client.is_none() {
+        let new_channel = Channel::new(app_handle, 30).await;
+        if new_channel.client.is_some() {
+            state.channel = new_channel;
+            Ok(true)
+        } else {
+            Err("Failed to reconnect channel".to_string())
+        }
+    } else {
+        Ok(true)
+    }
+}
+
+#[tauri::command]
+fn check_client_status(state: State<'_, AppState>) -> Result<bool, String> {
+    let state = state.try_lock().map_err(|e| e.to_string())?;
+    Ok(state.channel.client.is_some())
+}
+
+#[tauri::command]
 fn disconnect_channel(state: State<'_, AppState>) -> Result<(), String> {
-    let state = state.lock().map_err(|e| e.to_string())?;
+    let state = state.try_lock().map_err(|e| e.to_string())?;
     state.channel.disconnect().map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn get_channel_secret(state: State<'_, AppState>) -> Result<String, String> {
-    let state = state.lock().map_err(|e| e.to_string())?;
+    let state = state.try_lock().map_err(|e| e.to_string())?;
     Ok(state.channel.encryption_key.clone().unwrap_or_default())
 }
 
 #[tauri::command]
 fn generate_encryption_key(state: State<'_, AppState>) -> Result<String, String> {
-    let mut state = state.lock().map_err(|e| e.to_string())?;
+    let mut state = state.try_lock().map_err(|e| e.to_string())?;
     state
         .channel
         .generate_encryption_key()
@@ -73,7 +99,7 @@ fn set_hwi_client(
     device_type: HWIDeviceType,
     network: bitcoin::Network,
 ) -> Result<(), String> {
-    let mut state = state.lock().map_err(|e| e.to_string())?;
+    let mut state = state.try_lock().map_err(|e| e.to_string())?;
     let client = HWIClient::<BinaryHWIImplementation<HWIBinaryExecutorImpl>>::find_device(
         None,
         Some(device_type.clone()),
@@ -93,7 +119,7 @@ fn set_hwi_client(
 
 #[tauri::command]
 fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
-    let state = state.lock().map_err(|e| e.to_string())?;
+    let state = state.try_lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let xpub_data = get_xpub(hwi_state).map_err(|e| e.to_string())?;
 
@@ -120,7 +146,7 @@ fn share_xpubs(state: State<'_, AppState>) -> Result<(), String> {
 
 #[tauri::command]
 fn device_healthcheck(state: State<'_, AppState>) -> Result<(), String> {
-    let state = state.lock().map_err(|e| e.to_string())?;
+    let state = state.try_lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let xpub_data = get_xpub(hwi_state).map_err(|e| e.to_string())?;
 
@@ -147,7 +173,7 @@ fn device_healthcheck(state: State<'_, AppState>) -> Result<(), String> {
 
 #[tauri::command]
 fn sign_tx(state: State<'_, AppState>, psbt: String) -> Result<(), String> {
-    let state = state.lock().map_err(|e| e.to_string())?;
+    let state = state.try_lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let signed_psbt = hwi_state
         .hwi
@@ -182,7 +208,7 @@ fn register_multisig(
     descriptor: String,
     expected_address: String,
 ) -> Result<(), String> {
-    let state = state.lock().map_err(|e| e.to_string())?;
+    let state = state.try_lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let address = hwi_state
         .hwi
@@ -216,7 +242,7 @@ fn register_multisig(
 
 #[tauri::command]
 fn verify_address(state: State<'_, AppState>, descriptor: String) -> Result<(), String> {
-    let state = state.lock().map_err(|e| e.to_string())?;
+    let state = state.try_lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let address = hwi_state
         .hwi
@@ -249,14 +275,35 @@ fn main() {
     env_logger::init();
     tauri::Builder::default()
         .setup(|app| {
-            // TODO: Open app with an error if connection to the channel fails
-            let channel = Channel::new(app.handle());
             // TODO: For Linux we might need to install udev rules here or with a command for the interface.
-            let app_state = AppStateInner { channel, hwi: None };
+            let splashscreen_window = app.get_window("splashscreen").unwrap();
+            let main_window = app.get_window("main").unwrap();
+
+            let channel_builder = Channel::builder(app.handle().clone());
+            let app_state = AppStateInner { channel: Channel::new_empty(), hwi: None };
             app.manage(Mutex::new(app_state));
+            let app_handle = app.handle().clone();
+
+            tauri::async_runtime::spawn(async move {
+                let channel = channel_builder.build().await;
+                if channel.client.is_none() {
+                    warn!("Channel connection could not be established. Starting without a connection.");
+                }
+                let app_state = app_handle.state::<AppState>();
+                let app_state = app_state.try_lock().map_err(|e| {
+                    error!("Failed to lock app state: {}", e);
+                });
+                app_state.unwrap().channel = channel;
+
+                splashscreen_window.close().unwrap();
+                main_window.show().unwrap();
+                let _ = app_handle.emit_all("app-ready", ());
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            reconnect_channel,
+            check_client_status,
             disconnect_channel,
             get_channel_secret,
             generate_encryption_key,

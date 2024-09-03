@@ -35,6 +35,15 @@
         "height": 670,
         "resizable": false,
         "fullscreen": false
+      },
+      {
+        "width": 900,
+        "height": 670,
+        "resizable": false,
+        "fullscreen": false,
+        "decorations": false,
+        "url": "splashscreen.html",
+        "label": "splashscreen"
       }
     ],
     "security": {

@@ -3,6 +3,8 @@ name: CI
 on:
   pull_request:
     branches: [main, dev, release]
+  push:
+    branches: [main, dev, release]
 
 jobs:
   lint-and-format:

@@ -62,7 +62,9 @@ const DeviceActionModal = ({
 
   const isVerifyAddress = actionType === "verifyAddress";
   const iconSrc = isVerifyAddress ? verifyAddressIcon : content.icon;
-  const iconStyle = isVerifyAddress ? { width: "203px", height: "157px" } : {};
+  const iconStyle = isVerifyAddress
+    ? { width: "173px", height: "137px", marginBottom: "-20px" }
+    : {};
 
   const modalContent = {
     image: (
@@ -78,7 +80,7 @@ const DeviceActionModal = ({
         className={`${baseStyles.title} ${styles.title}`}
         style={{
           textAlign: hasListItems ? "left" : "center",
-          marginLeft: hasListItems ? "25px" : "7%",
+          marginLeft: hasListItems ? "25px" : "0px",
         }}
       >
         {actionTitle(deviceType)[actionType]}

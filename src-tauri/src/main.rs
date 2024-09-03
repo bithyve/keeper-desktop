@@ -55,12 +55,6 @@ async fn connect_channel(
 }
 
 #[tauri::command]
-fn check_client_status(state: State<'_, AppState>) -> Result<bool, String> {
-    let state = state.try_lock().map_err(|e| e.to_string())?;
-    Ok(state.channel.client.is_some())
-}
-
-#[tauri::command]
 fn disconnect_channel(state: State<'_, AppState>) -> Result<(), String> {
     let state = state.try_lock().map_err(|e| e.to_string())?;
     state.channel.disconnect().map_err(|e| e.to_string())
@@ -264,7 +258,6 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             connect_channel,
-            check_client_status,
             disconnect_channel,
             get_channel_secret,
             generate_encryption_key,

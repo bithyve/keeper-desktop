@@ -15,12 +15,9 @@ use hwi::types::{HWIBinaryExecutor, HWIDevice, HWIDeviceType};
 use log::{error, warn};
 use serde_json::json;
 use std::str::FromStr;
-use std::time::{Duration, Instant};
 use tauri::api::process::Command;
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
-use tokio::time::sleep;
-
 pub struct HWIClientState {
     hwi: HWIClient<BinaryHWIImplementation<HWIBinaryExecutorImpl>>,
     #[allow(dead_code)]
@@ -290,8 +287,6 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             // TODO: For Linux we might need to install udev rules here or with a command for the interface.
-            let splashscreen_window = app.get_window("splashscreen").unwrap();
-            let main_window = app.get_window("main").unwrap();
 
             let channel_builder = Channel::builder(app.handle().clone());
             let app_state = AppStateInner { channel: Channel::new_empty(), hwi: None };
@@ -299,7 +294,6 @@ fn main() {
             let app_handle = app.handle().clone();
 
             tauri::async_runtime::spawn(async move {
-                let start_time = Instant::now();
                 let channel = channel_builder.build().await;
                 if channel.client.is_none() {
                     warn!("Channel connection could not be established. Starting without a connection.");
@@ -310,13 +304,6 @@ fn main() {
                 });
                 app_state.unwrap().channel = channel;
 
-                let elapsed = start_time.elapsed();
-                if elapsed < Duration::from_millis(2700) {
-                    sleep(Duration::from_millis(2700) - elapsed).await;
-                }
-
-                splashscreen_window.close().unwrap();
-                main_window.show().unwrap();
                 let _ = app_handle.emit_all("app-ready", ());
             });
             Ok(())

@@ -3,8 +3,7 @@
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": true
+    "distDir": "../dist"
   },
   "package": {
     "productName": "Keeper Desktop",
@@ -36,15 +35,6 @@
         "height": 670,
         "resizable": false,
         "fullscreen": false
-      },
-      {
-        "width": 900,
-        "height": 670,
-        "resizable": false,
-        "fullscreen": false,
-        "decorations": false,
-        "url": "splashscreen.html",
-        "label": "splashscreen"
       }
     ],
     "security": {

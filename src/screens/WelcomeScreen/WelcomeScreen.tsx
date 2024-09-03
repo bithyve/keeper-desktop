@@ -8,15 +8,15 @@ import { Link } from "react-router-dom";
 import loader from "../../assets/loader.svg";
 
 const WelcomeScreen = () => {
-  const [isConnected, setIsConnected] = useState(true);
-  const [isReconnecting, setIsReconnecting] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(true);
 
   useEffect(() => {
-    console.log("Checking connection");
-    checkConnection();
-
     const unsubscribe = listen("app-ready", async () => {
       await checkConnection();
+      setTimeout(() => {
+        setIsReconnecting(false);
+      }, 2500);
     });
 
     return () => {

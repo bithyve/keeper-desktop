@@ -25,6 +25,7 @@ interface ChannelMessagePayload {
     psbt?: { serializedPSBT: string };
     descriptorString?: string;
     firstExtAdd?: string;
+    receivingAddress?: string;
   };
   network: string;
 }
@@ -122,6 +123,11 @@ const ConnectScreen = () => {
               setDescriptor(data.descriptorString);
             } else {
               handleError("Descriptor is required");
+            }
+            if (data.receivingAddress) {
+              setExpectedAddress(data.receivingAddress);
+            } else {
+              handleError("Expected address was not provided");
             }
             break;
           default:

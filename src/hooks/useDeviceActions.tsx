@@ -64,7 +64,7 @@ export const useDeviceActions = ({
             onError("Descriptor is required");
             return;
           }
-          await hwiService.verifyAddress(descriptor);
+          await hwiService.verifyAddress(descriptor, expectedAddress ?? "");
           onActionSuccess();
           break;
         default:

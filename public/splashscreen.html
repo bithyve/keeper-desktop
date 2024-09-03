@@ -32,12 +32,14 @@
             justify-content: center;
             width: 100%;
             max-width: 500px;
+            animation: fadeInScale 1.5s ease-out;
         }
 
         .keeperLogo {
             width: 310px;
             height: 132px;
             margin-bottom: 0px;
+            animation: fadeIn 1.5s ease-out;
         }
 
         .tagline {
@@ -49,6 +51,7 @@
             margin-bottom: 30px;
             text-align: center;
             color: #fff6de;
+            animation: fadeIn 1.5s ease-out 0.5s both;
         }
 
         .footer {
@@ -57,6 +60,7 @@
             font-size: 16px;
             text-align: center;
             font-weight: 100;
+            animation: fadeInScale 0.5s ease-out 0.3s backwards;
         }
 
         .bithyveSymbol {
@@ -79,21 +83,52 @@
         .loadingSpinner {
             width: 30px;
             height: 30px;
-            animation: spin 1s linear infinite;
-            }
+            animation: fadeIn 1s ease-out 2s both, spin 2s linear infinite 2s;
+            opacity: 0;
+        }
 
-            @keyframes spin {
+        .closeButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #fff6de;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 2s forwards;
+        }
+
+        .closeButton:hover {
+            color: #ffd8a8;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInScale {
             0% {
-                transform: rotate(0deg);
+                opacity: 0;
+                transform: scale(0.95);
             }
             100% {
-                transform: rotate(360deg);
+                opacity: 1;
+                transform: scale(1);
             }
         }
     </style>
 </head>
 <body>
     <div class="welcomeScreen">
+        <button class="closeButton" onclick="window.close()">×</button>
         <div class="content">
             <img src="../src/assets/keeper-logo.png" alt="Keeper Logo" class="keeperLogo" />
             <p class="tagline">Secure Today, Plan for Tomorrow</p>
@@ -115,5 +150,15 @@
             </span>
         </footer>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const closeButton = document.querySelector('.closeButton');
+            
+            closeButton.addEventListener('click', async () => {
+                window.__TAURI__.invoke("exit_app");
+            });
+        });
+    </script>
 </body>
 </html>

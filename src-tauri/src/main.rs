@@ -15,9 +15,11 @@ use hwi::types::{HWIBinaryExecutor, HWIDevice, HWIDeviceType};
 use log::{error, warn};
 use serde_json::json;
 use std::str::FromStr;
+use std::time::{Duration, Instant};
 use tauri::api::process::Command;
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
+use tokio::time::sleep;
 
 pub struct HWIClientState {
     hwi: HWIClient<BinaryHWIImplementation<HWIBinaryExecutorImpl>>,
@@ -241,20 +243,27 @@ fn register_multisig(
 }
 
 #[tauri::command]
-fn verify_address(state: State<'_, AppState>, descriptor: String) -> Result<(), String> {
+fn verify_address(
+    state: State<'_, AppState>,
+    descriptor: String,
+    expected_address: String,
+) -> Result<(), String> {
     let state = state.try_lock().map_err(|e| e.to_string())?;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let address = hwi_state
         .hwi
         .display_address_with_desc(&descriptor)
         .map_err(|e| e.to_string())?;
+    if address.address != Address::from_str(&expected_address).map_err(|e| e.to_string())? {
+        return Err("Address received from device does not match the expected address".to_string());
+    }
     let event_data = json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
             "responseData": {
                 "action": "VERIFY_ADDRESS",
                 "data": {
-                    "address": address
+                    "address": address.address
                 }
             }
         }
@@ -271,6 +280,11 @@ fn verify_address(state: State<'_, AppState>, descriptor: String) -> Result<(), 
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn exit_app() {
+    std::process::exit(0x0);
+}
+
 fn main() {
     env_logger::init();
     tauri::Builder::default()
@@ -285,6 +299,7 @@ fn main() {
             let app_handle = app.handle().clone();
 
             tauri::async_runtime::spawn(async move {
+                let start_time = Instant::now();
                 let channel = channel_builder.build().await;
                 if channel.client.is_none() {
                     warn!("Channel connection could not be established. Starting without a connection.");
@@ -294,6 +309,11 @@ fn main() {
                     error!("Failed to lock app state: {}", e);
                 });
                 app_state.unwrap().channel = channel;
+
+                let elapsed = start_time.elapsed();
+                if elapsed < Duration::from_millis(2200) {
+                    sleep(Duration::from_millis(2200) - elapsed).await;
+                }
 
                 splashscreen_window.close().unwrap();
                 main_window.show().unwrap();
@@ -313,7 +333,8 @@ fn main() {
             device_healthcheck,
             sign_tx,
             register_multisig,
-            verify_address
+            verify_address,
+            exit_app
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

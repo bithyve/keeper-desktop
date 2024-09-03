@@ -44,27 +44,13 @@ pub enum ChannelError {
     ConnectionTimeout,
 }
 
-pub struct ChannelBuilder {
-    app_handle: tauri::AppHandle,
-}
-
 pub struct Channel {
     pub client: Option<Client>,
     pub room: Option<String>,
     pub encryption_key: Option<String>,
 }
 
-impl ChannelBuilder {
-    pub async fn build(self) -> Channel {
-        Channel::new(self.app_handle, 30).await
-    }
-}
-
 impl Channel {
-    pub fn builder(app_handle: tauri::AppHandle) -> ChannelBuilder {
-        ChannelBuilder { app_handle }
-    }
-
     pub async fn new(app_handle: tauri::AppHandle, timeout_secs: u64) -> Self {
         let client = create_client_with_timeout(app_handle, timeout_secs).await;
         if let Err(e) = &client {

@@ -12,12 +12,12 @@ use hwi::error::Error;
 use hwi::implementations::binary_implementation::BinaryHWIImplementation;
 use hwi::interface::HWIClient;
 use hwi::types::{HWIBinaryExecutor, HWIDevice, HWIDeviceType};
-use log::{error, warn};
 use serde_json::{json, Value};
 use std::str::FromStr;
 use tauri::api::process::Command;
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
+
 pub struct HWIClientState {
     hwi: HWIClient<BinaryHWIImplementation<HWIBinaryExecutorImpl>>,
     #[allow(dead_code)]
@@ -36,7 +36,7 @@ pub type AppState = Mutex<AppStateInner>;
 // ==================== Channel Commands ====================
 
 #[tauri::command]
-async fn reconnect_channel(
+async fn connect_channel(
     app_handle: tauri::AppHandle,
     state: State<'_, AppState>,
 ) -> Result<bool, String> {
@@ -255,29 +255,15 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             // TODO: For Linux we might need to install udev rules here or with a command for the interface.
-
-            let channel_builder = Channel::builder(app.handle().clone());
-            let app_state = AppStateInner { channel: Channel::new_empty(), hwi: None };
+            let app_state = AppStateInner {
+                channel: Channel::new_empty(),
+                hwi: None,
+            };
             app.manage(Mutex::new(app_state));
-            let app_handle = app.handle().clone();
-
-            tauri::async_runtime::spawn(async move {
-                let channel = channel_builder.build().await;
-                if channel.client.is_none() {
-                    warn!("Channel connection could not be established. Starting without a connection.");
-                }
-                let app_state = app_handle.state::<AppState>();
-                let app_state = app_state.try_lock().map_err(|e| {
-                    error!("Failed to lock app state: {}", e);
-                });
-                app_state.unwrap().channel = channel;
-
-                let _ = app_handle.emit_all("app-ready", ());
-            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            reconnect_channel,
+            connect_channel,
             check_client_status,
             disconnect_channel,
             get_channel_secret,

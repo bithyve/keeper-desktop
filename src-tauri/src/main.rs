@@ -311,8 +311,8 @@ fn main() {
                 app_state.unwrap().channel = channel;
 
                 let elapsed = start_time.elapsed();
-                if elapsed < Duration::from_millis(2200) {
-                    sleep(Duration::from_millis(2200) - elapsed).await;
+                if elapsed < Duration::from_millis(2700) {
+                    sleep(Duration::from_millis(2700) - elapsed).await;
                 }
 
                 splashscreen_window.close().unwrap();

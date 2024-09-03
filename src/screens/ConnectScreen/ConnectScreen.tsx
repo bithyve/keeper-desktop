@@ -166,21 +166,16 @@ const ConnectScreen = () => {
               Keeper&apos;s desktop app.
             </li>
             <li>
-              Open the QR scanner from the Keeper mobile app and scan the QR
-              alongside.
-            </li>
-            <li>
-              Please refresh the QR for every new operation (adding keys,
-              registering vaults, signing transactions, health checks) you
-              perform.
+              Open the Keeper mobile app to select your desired action, then
+              scan the QR code to continue.
             </li>
           </ul>
         </div>
         <div className={styles.note}>
           <h4>Note:</h4>
           <p>
-            This QR will get you the key to Decrypt the data from this Keeper
-            Web Interface to make communication E2R encrypted.
+            This QR will give your mobile app the key to establish a secure E2E
+            encrypted connection with the desktop app.
           </p>
         </div>
       </div>

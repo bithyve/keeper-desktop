@@ -78,36 +78,35 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
     icon: ledgerIconModal,
     content: {
       connect: {
-        text: "Your Mobile app is trying to connect to Ledger. Please connect your Ledger via USB to continue with Keeper Desktop app.",
+        text: "Your mobile app is trying to connect to your Ledger. Please connect your Ledger to your computer via USB, unlock it with your PIN and open the BTC app on it.",
         list: [],
       },
       shareXpubs: {
-        text: "Keep your Ledger device connected to the computer before proceeding.",
-        list: [
-          "Please make sure you have BTC app downloaded on Ledger before this step.",
-        ],
+        text: "Keep your Ledger connected to the computer until the operation is completed.",
+        list: [],
       },
       healthCheck: {
-        text: "Your Mobile app is trying to perform a health check. Please keep your Ledger connected to the computer to continue with Keeper Desktop app.",
+        text: "Your Mobile app is trying to perform a health check. Keep your Ledger connected to the computer until the operation is completed.",
         list: [
-          "Health check is initiated if a signer is not used for last 180 days",
-          "Please make sure you have the BTC app downloaded on Ledger before this step",
+          "Health check ensures the device holds the keys registered in the mobile app",
         ],
       },
       signTx: {
-        text: "Please sign the transaction by approving it on the connected Ledger device.",
-        list: [],
+        text: "Please sign the transaction by approving it on your Ledger.",
+        list: [
+          "Make sure to verify the address and the amount appearing on the screen of your Ledger device are correct.",
+          "Only trust the information displayed on your Ledger's screen, and only approve it if it matches the expected details.",
+        ],
       },
       registerMultisig: {
         text: "Please approve the registration of the multisig on the connected Ledger device.",
         list: [],
       },
       verifyAddress: {
-        text: "",
+        text: "Clicking below will display the address on your Ledger device, make sure to read it carefully and verify that it matches the address on your Keeper mobile app.",
         list: [
-          "For security purpose we recommend verifying address on your Ledger.",
-          "By verifying the address, you will be able to confirm the address shown on your device is same as shown in your Ledger.",
-          "The Address displayed on your Ledger cannot be compromised.",
+          "Only use the address from Keeper mobile app if it matches the address displayed on your Ledger.",
+          "In case the address on your Ledger is different than the address on the Keeper mobile app please contact support immediately.",
         ],
       },
     },
@@ -116,34 +115,35 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
     icon: trezorIconModal,
     content: {
       connect: {
-        text: "Your Mobile app is trying to connect to Trezor. Please connect and unlock your Trezor to the computer to continue with Keeper Desktop app",
+        text: "Your mobile app is trying to connect to Trezor. Please connect your Trezor to your computer (for Trezor Model T you should first unlock it with your PIN) to continue with Keeper Desktop app.",
         list: [],
       },
       shareXpubs: {
-        text: "Keep your Trezor device connected to the computer before proceeding.",
+        text: "Keep your Trezor connected to the computer until the operation is completed.",
         list: [],
       },
       healthCheck: {
-        text: "Your Mobile app is trying to perform a health check. Please keep your Trezor connected to the computer.",
+        text: "Your Mobile app is trying to perform a health check. Keep your Trezor connected to the computer until the operation is completed.",
         list: [
-          "Health check is initiated if a signer is not used for last 180 days",
-          "Make sure you have the device is setup with the Trezor Connect app before using it with Desktop Keeper App",
+          "Health check ensures the device holds the keys registered in the mobile app",
         ],
       },
       signTx: {
-        text: "Please sign the transaction by approving it on the connected Trezor device.",
-        list: [],
+        text: "Please sign the transaction by approving it on your Trezor.",
+        list: [
+          "Make sure to verify the address and the amount appearing on the screen of your Trezor device are correct.",
+          "Only trust the information displayed on your Trezor's screen, and only approve it if it matches the expected details.",
+        ],
       },
       registerMultisig: {
         text: "Operation not supported on Trezor",
         list: [],
       },
       verifyAddress: {
-        text: "",
+        text: "Clicking below will display the address on your Trezor device, make sure to read it carefully and verify that it matches the address on your Keeper mobile app.",
         list: [
-          "For security purpose we recommend verifying address on your Trezor.",
-          "By verifying the address, you will be able to confirm the address shown on your device is same as shown in your Trezor.",
-          "The Address displayed on your Trezor cannot be compromised.",
+          "Only use the address from Keeper mobile app if it matches the address displayed on your Trezor.",
+          "In case the address on your Trezor is different than the address on the Keeper mobile app please contact support immediately.",
         ],
       },
     },
@@ -152,36 +152,35 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
     icon: bitboxIconModal,
     content: {
       connect: {
-        text: "Your Mobile app is trying to connect to BitBox02. Please connect and unlock your BitBox02 to the computer to continue with Keeper Desktop app",
+        text: "Your mobile app is trying to connect to BitBox02. Please connect your BitBox02 to the computer and unlock it with your password to continue with Keeper Desktop app",
         list: [],
       },
       shareXpubs: {
-        text: "Keep your BitBox02 device connected to the computer before proceeding.",
-        list: [
-          "Please make sure the device is setup with the BitBox02 app before using it with Keeper Desktop App",
-        ],
+        text: "Keep your BitBox02 connected to the computer until the operation is completed.",
+        list: [],
       },
       healthCheck: {
-        text: "Your Mobile app is trying to perform a health check. Please keep your BitBox02 connected to the computer.",
+        text: "Your Mobile app is trying to perform a health check. Keep your BitBox02 connected to the computer until the operation is completed.",
         list: [
-          "Health check is initiated if a signer is not used for last 180 days",
-          "Make sure that the device is setup with the Bitbox02 app before using it with the Keeper Desktop App",
+          "Health check ensures the device holds the keys registered in the mobile app",
         ],
       },
       signTx: {
-        text: "Please sign the transaction by approving it on the connected BitBox02 device.",
-        list: [],
+        text: "Please sign the transaction by approving it on your BitBox02.",
+        list: [
+          "Make sure to verify the address and the amount appearing on the screen of your BitBox02 device are correct.",
+          "Only trust the information displayed on your BitBox02's screen, and only approve it if it matches the expected details.",
+        ],
       },
       registerMultisig: {
         text: "Please approve the registration of the multisig on the connected BitBox02 device.",
         list: [],
       },
       verifyAddress: {
-        text: "",
+        text: "Clicking below will display the address on your BitBox02 device, make sure to read it carefully and verify that it matches the address on your Keeper mobile app.",
         list: [
-          "For security purpose we recommend verifying address on your BitBox02.",
-          "By verifying the address, you will be able to confirm the address shown on your device is same as shown in your BitBox02.",
-          "The Address displayed on your BitBox02 cannot be compromised.",
+          "Only use the address from Keeper mobile app if it matches the address displayed on your BitBox02.",
+          "In case the address on your BitBox02 is different than the address on the Keeper mobile app please contact support immediately.",
         ],
       },
     },

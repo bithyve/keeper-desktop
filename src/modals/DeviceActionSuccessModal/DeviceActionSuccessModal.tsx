@@ -55,12 +55,12 @@ const DeviceActionSuccessModal = ({
       case "registerMultisig":
         return {
           title: `Multisig Registered Successfully!`,
-          text: `Your multisig has been successfully registered and is now available for use.`,
+          text: `Your multisig has been successfully registered in your ${deviceName} and is now available for use.`,
         };
       case "verifyAddress":
         return {
-          title: `Address Verified Successfully!`,
-          text: `Your address has been successfully verified, you can now safely use it to receive funds.`,
+          title: `Address Verified`,
+          text: `If the address displayed on your ${deviceName} matched the address on the Keeper mobile app, you can safely use it to receive funds. Otherwise, please contact support.`,
         };
     }
   };

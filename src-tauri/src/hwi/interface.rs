@@ -301,6 +301,13 @@ impl<T: HWIImplementation> HWIClient<T> {
         status.into()
     }
 
+    /// Send PIN to a device
+    pub fn send_pin(&self, pin: &str) -> Result<(), Error> {
+        let output = self.implementation.send_pin(pin)?;
+        let status: HWIStatus = deserialize_obj!(&output)?;
+        status.into()
+    }
+
     /// Get the installed version of hwilib. Returns None if hwi is not installed.
     pub fn get_version() -> Result<String, Error> {
         T::get_version()

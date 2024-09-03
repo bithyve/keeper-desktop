@@ -283,6 +283,16 @@ impl<T: HWIBinaryExecutor> HWIImplementation for BinaryHWIImplementation<T> {
         )
     }
 
+    fn send_pin(&self, pin: &str) -> Result<String, Error> {
+        let args = vec!["sendpin", pin];
+        BinaryHWIImplementation::<T>::run_hwi_command(
+            self.device.as_ref(),
+            self.expert,
+            Some(&self.chain),
+            args,
+        )
+    }
+
     fn get_version() -> Result<String, Error> {
         let args = vec!["--version"];
         BinaryHWIImplementation::<T>::run_hwi_command(None, false, None, args)

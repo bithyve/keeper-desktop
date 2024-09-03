@@ -278,8 +278,10 @@ fn verify_address(
 }
 
 #[tauri::command]
-fn exit_app() {
-    std::process::exit(0x0);
+fn send_pin(state: State<'_, AppState>, pin: String) -> Result<(), String> {
+    let state = state.try_lock().map_err(|e| e.to_string())?;
+    let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
+    hwi_state.hwi.send_pin(&pin).map_err(|e| e.to_string())
 }
 
 fn main() {
@@ -321,7 +323,7 @@ fn main() {
             sign_tx,
             register_multisig,
             verify_address,
-            exit_app
+            send_pin
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

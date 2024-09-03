@@ -305,6 +305,7 @@ pub trait HWIImplementation {
     fn restore_device(&self, label: &str, word_count: u8) -> Result<String, Error>;
     fn backup_device(&self, label: &str, backup_passphrase: &str) -> Result<String, Error>;
     fn wipe_device(&self) -> Result<String, Error>;
+    fn send_pin(&self, pin: &str) -> Result<String, Error>;
     fn get_descriptors(&self, account: u32) -> Result<String, Error>;
     #[allow(clippy::too_many_arguments)]
     fn get_keypool(

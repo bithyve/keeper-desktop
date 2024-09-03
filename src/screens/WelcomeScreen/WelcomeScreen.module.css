@@ -8,7 +8,6 @@
   padding: 20px;
   box-sizing: border-box;
   color: #fff6de;
-  background: linear-gradient(180deg, #2d6759 30%, #0f7a60 100%);
 }
 
 .content {
@@ -18,21 +17,26 @@
   justify-content: center;
   width: 100%;
   max-width: 500px;
+  animation: fadeInScale 2s ease-out 0.7s both;
 }
 
 .keeperLogo {
   width: 310px;
   height: 132px;
-  margin-bottom: 19px;
+  margin-bottom: 0px;
+  animation: fadeInScale 2s ease-out 0.7s both;
 }
 
 .tagline {
-  font-size: 18px;
+  margin-top: 10px;
+  font-size: 19px;
   font-style: normal;
-  font-weight: 200;
+  font-weight: 400;
   line-height: normal;
-  margin-bottom: 50px;
+  margin-bottom: 30px;
   text-align: center;
+  color: #fff6de;
+  animation: fadeInScale 2s ease-out 0.7s both;
 }
 
 .footer {
@@ -41,6 +45,7 @@
   font-size: 16px;
   text-align: center;
   font-weight: 100;
+  animation: fadeInScale 2s ease-out 0.7s backwards;
 }
 
 .bithyveSymbol {
@@ -58,4 +63,98 @@
 
 .hyve {
   font-weight: bold;
+}
+
+.btn {
+  width: 142px;
+  height: 42px;
+  padding: 13px 19.05px 9px 20px;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 10px;
+  background: var(--Primary-Cream, #f7f2ec);
+  color: var(--Primary-Green, #2d6759);
+  text-align: center;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  cursor:;
+  transition: none;
+  animation: fadeInScale 0.5s ease-out;
+}
+
+.btn:hover {
+  background-color: #e8e3dd;
+  box-shadow: 0 2px 8px rgba(45, 103, 89, 0.2);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+.btn.reconnect {
+  padding-bottom: 20px;
+  animation: fadeIn 0.5s ease-out both;
+}
+
+.btn.reconnect:disabled {
+  background-color: transparent;
+  cursor: default;
+}
+
+.errorMessage {
+  background-color: #f7f2ec;
+  color: #ff6b6b;
+  font-size: 16px;
+  margin-bottom: 25px;
+  text-align: center;
+  padding: 25px;
+  border-radius: 5px;
+  border: 1px solid #ff6b6b;
+  animation: fadeIn 0.5s ease-out both;
+}
+
+/* TODO: Move spinner to a shared component */
+.loadingSpinner {
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

@@ -31,8 +31,10 @@
     "windows": [
       {
         "title": "Keeper Desktop",
-        "width": 960,
-        "height": 720
+        "width": 900,
+        "height": 670,
+        "resizable": false,
+        "fullscreen": false
       }
     ],
     "security": {

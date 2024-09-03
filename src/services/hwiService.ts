@@ -2,28 +2,54 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { HWIDevice, HWIDeviceType } from "../helpers/devices";
 
 const hwiService = {
-  fetchDevices: async (): Promise<HWIDevice[]> => {
+  fetchDevices: async (
+    deviceType: HWIDeviceType | null = null,
+  ): Promise<HWIDevice[]> => {
     const devices = await invoke<HWIDevice[]>("hwi_enumerate");
-    return devices.map((device) => ({
-      ...device,
-      device_type: device.device_type.toLowerCase() as HWIDeviceType,
-    }));
+    return devices
+      .filter((device) => !deviceType || device.device_type === deviceType)
+      .map((device) => ({
+        ...device,
+        device_type: device.device_type.toLowerCase() as HWIDeviceType,
+      }));
   },
 
-  setDeviceInfo: async (fingerprint: string, deviceType: string): Promise<void> => {
-    await invoke<void>("set_device_info", { fingerprint, deviceType });
+  setHWIClient: async (
+    fingerprint: string,
+    deviceType: string,
+    network: string,
+  ): Promise<void> => {
+    await invoke<void>("set_hwi_client", { fingerprint, deviceType, network });
   },
 
-  shareXpubs: async (): Promise<string> => {
-    let res = await invoke<string>("share_xpubs");
-    console.log(res);
-    return res;
+  shareXpubs: async (): Promise<void> => {
+    await invoke<void>("share_xpubs");
   },
 
-  performHealthCheck: async (): Promise<string> => {
-    let res = await invoke<string>("device_healthcheck");
-    console.log(res);
-    return res;
+  performHealthCheck: async (): Promise<void> => {
+    await invoke<void>("device_healthcheck");
+  },
+
+  signTx: async (psbt: string): Promise<void> => {
+    await invoke<void>("sign_tx", { psbt });
+  },
+
+  registerMultisig: async (
+    descriptor: string,
+    expectedAddress: string,
+  ): Promise<void> => {
+    await invoke<void>("register_multisig", { descriptor, expectedAddress });
+  },
+
+  verifyAddress: async (
+    descriptor: string,
+    expectedAddress: string,
+  ): Promise<void> => {
+    await invoke<void>("verify_address", { descriptor, expectedAddress });
+  },
+
+  sendPin: async (pin: string): Promise<void> => {
+    await invoke<void>("send_pin", { pin });
   },
 };
 

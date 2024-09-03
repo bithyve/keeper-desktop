@@ -11,12 +11,9 @@ use bitcoin::Psbt;
 
 use serde::{Deserialize, Deserializer, Serialize};
 
-#[cfg(feature = "miniscript")]
-use miniscript::{Descriptor, DescriptorPublicKey};
-
 use crate::hwi::error::{Error, ErrorCode};
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIExtendedPubKey {
     pub xpub: Xpub,
 }
@@ -29,7 +26,7 @@ impl Deref for HWIExtendedPubKey {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWISignature {
     #[serde(deserialize_with = "from_b64")]
     pub signature: Vec<u8>,
@@ -52,12 +49,12 @@ impl Deref for HWISignature {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIAddress {
     pub address: Address<NetworkUnchecked>,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIPartiallySignedTransaction {
     #[serde(deserialize_with = "deserialize_psbt")]
     pub psbt: Psbt,
@@ -78,10 +75,8 @@ impl Deref for HWIPartiallySignedTransaction {
 
 pub trait ToDescriptor {}
 impl ToDescriptor for String {}
-#[cfg(feature = "miniscript")]
-impl ToDescriptor for Descriptor<DescriptorPublicKey> {}
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIDescriptor<T>
 where
     T: ToDescriptor,
@@ -90,7 +85,7 @@ where
     pub receive: Vec<T>,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIKeyPoolElement {
     pub desc: String,
     pub range: Vec<u32>,
@@ -100,7 +95,7 @@ pub struct HWIKeyPoolElement {
     pub watchonly: bool,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 #[allow(non_camel_case_types)]
 pub enum HWIAddressType {
     Legacy,
@@ -120,7 +115,7 @@ impl fmt::Display for HWIAddressType {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIChain(bitcoin::Network);
 
 impl fmt::Display for HWIChain {
@@ -147,7 +142,7 @@ pub const TESTNET: HWIChain = HWIChain(Network::Testnet);
 // Used internally to deserialize the result of `hwi enumerate`. This might
 // contain an `error`, when it does, it might not contain all the fields `HWIDevice`
 // is supposed to have - for this reason, they're all Option.
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub(crate) struct HWIDeviceInternal {
     #[serde(rename(deserialize = "type"))]
     pub device_type: Option<String>,
@@ -199,7 +194,7 @@ impl TryFrom<HWIDeviceInternal> for HWIDevice {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIStatus {
     pub success: bool,
 }
@@ -218,6 +213,7 @@ impl From<HWIStatus> for Result<(), Error> {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum HWIDeviceType {
     Ledger,
     Trezor,
@@ -278,4 +274,57 @@ pub enum HWIWordCount {
     W12 = 12,
     W18 = 18,
     W24 = 24,
+}
+
+pub trait HWIImplementation {
+    fn enumerate() -> Result<String, Error>;
+    fn get_client(device: &HWIDevice, expert: bool, chain: HWIChain) -> Result<Self, Error>
+    where
+        Self: Sized;
+    fn find_device(
+        password: Option<&str>,
+        device_type: Option<HWIDeviceType>,
+        fingerprint: Option<&str>,
+        expert: bool,
+        chain: HWIChain,
+    ) -> Result<Self, Error>
+    where
+        Self: Sized;
+    fn get_xpub(&self, path: &str, expert: bool) -> Result<String, Error>;
+    fn sign_tx(&self, psbt: &Psbt) -> Result<String, Error>;
+    fn get_master_xpub(&self, addrtype: HWIAddressType, account: u32) -> Result<String, Error>;
+    fn sign_message(&self, message: &str, path: &str) -> Result<String, Error>;
+    fn display_address_with_desc(&self, descriptor: &str) -> Result<String, Error>;
+    fn display_address_with_path(
+        &self,
+        path: &str,
+        address_type: HWIAddressType,
+    ) -> Result<String, Error>;
+    fn toggle_passphrase(&self) -> Result<String, Error>;
+    fn setup_device(&self, label: &str, passphrase: &str) -> Result<String, Error>;
+    fn restore_device(&self, label: &str, word_count: u8) -> Result<String, Error>;
+    fn backup_device(&self, label: &str, backup_passphrase: &str) -> Result<String, Error>;
+    fn wipe_device(&self) -> Result<String, Error>;
+    fn send_pin(&self, pin: &str) -> Result<String, Error>;
+    fn get_descriptors(&self, account: u32) -> Result<String, Error>;
+    #[allow(clippy::too_many_arguments)]
+    fn get_keypool(
+        &self,
+        keypool: bool,
+        internal: bool,
+        addr_type: HWIAddressType,
+        addr_all: bool,
+        account: u32,
+        path: Option<String>,
+        start: u32,
+        end: u32,
+    ) -> Result<String, Error>;
+    fn get_version() -> Result<String, Error>;
+    fn install_udev_rules(source: &str, location: &str) -> Result<String, Error>;
+    fn set_log_level(level: LogLevel) -> Result<(), Error>;
+    fn install_hwilib(version: String) -> Result<(), Error>;
+}
+
+pub trait HWIBinaryExecutor {
+    fn execute_command(args: Vec<String>) -> Result<String, Error>;
 }

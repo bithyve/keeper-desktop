@@ -1,83 +1,102 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { listen } from "@tauri-apps/api/event";
+import { Link } from "react-router-dom";
 import keeperLogo from "../../assets/keeper-logo.png";
 import bithyveLogo from "../../assets/bithyve-logo.svg";
-import styles from "./WelcomeScreen.module.css";
-import { Link } from "react-router-dom";
 import loader from "../../assets/loader.svg";
+import styles from "./WelcomeScreen.module.css";
 
 const WelcomeScreen = () => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [isReconnecting, setIsReconnecting] = useState(true);
+  const [connectionState, setConnectionState] = useState<
+    "connecting" | "connected" | "failed"
+  >("connecting");
+  const [circleExpanded, setCircleExpanded] = useState(false);
+  const [contentVisible, setContentVisible] = useState(false);
+  const [slowContentVisible, setSlowContentVisible] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = listen("app-ready", async () => {
-      await checkConnection();
-      setTimeout(() => {
-        setIsReconnecting(false);
-      }, 2500);
-    });
-
-    return () => {
-      unsubscribe.then((f) => f());
-    };
+  const connectChannel = useCallback(async () => {
+    try {
+      const connected = await invoke<boolean>("connect_channel");
+      setConnectionState(connected ? "connected" : "failed");
+    } catch {
+      setConnectionState("failed");
+    }
   }, []);
 
-  const checkConnection = async () => {
-    try {
-      const clientStatus = await invoke<boolean>("check_client_status");
-      setIsConnected(clientStatus);
-    } catch {
-      setIsConnected(false);
-    }
-  };
+  useEffect(() => {
+    setCircleExpanded(false);
+    setSlowContentVisible(false);
+    setContentVisible(false);
+    connectChannel();
 
-  const handleReconnect = async () => {
-    setIsReconnecting(true);
-    try {
-      setIsConnected(await invoke<boolean>("reconnect_channel"));
-    } catch {
-      setIsConnected(false);
-    } finally {
-      setIsReconnecting(false);
-    }
+    const circleTimeout = setTimeout(() => {
+      setCircleExpanded(true);
+    }, 500);
+
+    const contentTimeout = setTimeout(() => {
+      setContentVisible(true);
+    }, 1000);
+
+    const buttonTimeout = setTimeout(() => {
+      setSlowContentVisible(true);
+    }, 3500);
+
+    return () => {
+      clearTimeout(circleTimeout);
+      clearTimeout(contentTimeout);
+      clearTimeout(buttonTimeout);
+    };
+  }, [connectChannel]);
+
+  const handleReconnect = () => {
+    setConnectionState("connecting");
+    connectChannel();
   };
 
   return (
-    <div className={styles.welcomeScreen}>
-      <div className={styles.content}>
+    <div
+      className={`${styles.welcomeScreen} ${circleExpanded ? styles.circleExpanded : ""}`}
+    >
+      <div className={styles.circle}></div>
+      <div
+        className={`${styles.content} ${contentVisible ? styles.contentVisible : ""}`}
+      >
         <img src={keeperLogo} alt="Keeper Logo" className={styles.keeperLogo} />
         <p className={styles.tagline}>Secure Today, Plan for Tomorrow</p>
-        {isConnected ? (
-          <Link to="/connect" replace={true}>
-            <button className={styles.btn}>Get Started</button>
-          </Link>
-        ) : (
-          <>
-            {!isReconnecting && (
-              <p className={styles.errorMessage}>
+        <div className={styles.dynamicContent}>
+          {connectionState === "connecting" && (
+            <img
+              src={loader}
+              alt="Connecting..."
+              className={`${styles.loadingSpinner} ${slowContentVisible ? styles.slowVisible : ""}`}
+            />
+          )}
+          {connectionState === "connected" && (
+            <Link to="/connect" replace={true}>
+              <button
+                className={`${styles.btn} ${slowContentVisible ? styles.slowVisible : ""}`}
+              >
+                Get Started
+              </button>
+            </Link>
+          )}
+          {connectionState === "failed" && (
+            <>
+              <p
+                className={`${styles.errorMessage} ${slowContentVisible ? styles.slowVisible : ""}`}
+              >
                 Failed to establish connection with the Keeper server. Please
                 try again or contact support if the issue persists.
               </p>
-            )}
-            <button
-              className={`${styles.btn} ${styles.reconnect}`}
-              onClick={handleReconnect}
-              disabled={isReconnecting}
-            >
-              {isReconnecting ? (
-                <img
-                  src={loader}
-                  alt="Reconnecting..."
-                  className={styles.loadingSpinner}
-                />
-              ) : (
-                "Reconnect"
-              )}
-            </button>
-          </>
-        )}
+              <button
+                className={`${styles.btn} ${styles.reconnect} ${slowContentVisible ? styles.slowVisible : ""}`}
+                onClick={handleReconnect}
+              >
+                Reconnect
+              </button>
+            </>
+          )}
+        </div>
       </div>
       <footer className={styles.footer}>
         From the team at

@@ -28,7 +28,6 @@ const TrezorPinModal = ({
     if (pin.length < 4) {
       return showError("PIN must be at least 4 digits");
     }
-    console.log("pin", pin);
     await new Promise((resolve) => setTimeout(resolve, 100));
     try {
       await hwiService.sendPin(pin);

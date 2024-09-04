@@ -87,7 +87,6 @@ const ConnectScreen = () => {
       "channel-message",
       async (channelMessage: { payload: ChannelMessagePayload }) => {
         const { data, network } = channelMessage.payload;
-        console.log("channelMessage", data);
         setDeviceType(data.signerType.toLowerCase() as HWIDeviceType);
         switch (data.action) {
           case "ADD_DEVICE":

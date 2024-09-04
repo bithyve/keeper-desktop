@@ -75,7 +75,7 @@ jobs:
         shell: pwsh
         run: |
           $bundle = Get-ChildItem -Path "src-tauri\target\release\bundle\msi" -Filter "*.msi" | Select-Object -First 1
-          $exe = Get-ChildItem -Path "src-tauri\target\release" -Filter "*.exe" | Select-Object -First 1
+          $exe = Get-ChildItem -Path "src-tauri\target\release" -Filter "*Desktop.exe" | Select-Object -First 1
           echo "msi-path=$($bundle.FullName)" >> $env:GITHUB_OUTPUT
           echo "exe-path=$($exe.FullName)" >> $env:GITHUB_OUTPUT
 
@@ -230,7 +230,7 @@ jobs:
           Write-Output "Signed MSI saved as: $signedMsiName"
 
           # Find and rename EXE
-          $originalExe = Get-ChildItem -Path "${{ github.workspace }}/src-tauri/target/release" -Filter "*.exe" | Select-Object -First 1
+          $originalExe = Get-ChildItem -Path "${{ github.workspace }}/src-tauri/target/release" -Filter "*Desktop.exe" | Select-Object -First 1
           $signedExeName = $originalExe.BaseName + "-signed" + $originalExe.Extension
           Move-Item -Force "${{ github.workspace }}/signed-artifact.exe" "${{ github.workspace }}/src-tauri/target/release/$signedExeName"
           Write-Output "Signed EXE saved as: $signedExeName"

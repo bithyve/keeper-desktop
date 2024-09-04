@@ -11,6 +11,7 @@ jobs:
   publish-tauri:
     permissions:
       contents: write
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -68,42 +69,214 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
+      - name: Locate Windows artifacts
+        if: matrix.platform == 'windows-latest'
+        id: locate-windows-artifacts
+        shell: pwsh
+        run: |
+          $bundle = Get-ChildItem -Path "src-tauri\target\release\bundle\msi" -Filter "*.msi" | Select-Object -First 1
+          $exe = Get-ChildItem -Path "src-tauri\target\release" -Filter "*.exe" | Select-Object -First 1
+          echo "msi-path=$($bundle.FullName)" >> $env:GITHUB_OUTPUT
+          echo "exe-path=$($exe.FullName)" >> $env:GITHUB_OUTPUT
+
       - name: Sign Windows executables with SignPath
         if: matrix.platform == 'windows-latest'
-        uses: SignPath/github-action-submit-signing-request@v1
-        with:
-          api-token: "${{ secrets.SIGNPATH_API_TOKEN }}"
-          organization-id: "${{ secrets.SIGNPATH_ORGANIZATION_ID }}"
-          project-slug: "${{ secrets.SIGNPATH_PROJECT_SLUG }}"
-          signing-policy-slug: "${{ secrets.SIGNPATH_SIGNING_POLICY_SLUG }}"
-          github-artifact-id: "${{ steps.tauri-build.outputs.artifactId }}"
-          wait-for-completion: true
-          output-artifact-directory: "${{ github.workspace }}/signed-artifacts"
+        env:
+          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+          SIGNPATH_ORGANIZATION_ID: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          SIGNPATH_PROJECT_SLUG: ${{ secrets.SIGNPATH_PROJECT_SLUG }}
+          SIGNPATH_SIGNING_POLICY_SLUG: ${{ secrets.SIGNPATH_SIGNING_POLICY_SLUG }}
+        run: |
+          $ErrorActionPreference = 'Stop'
 
-      - name: Upload signed artifacts
+          function Wait-ForSigning {
+            param (
+              [string]$signingRequestId,
+              [string]$artifactType
+            )
+            
+            $maxAttempts = 30
+            $attemptCount = 0
+            
+            while ($attemptCount -lt $maxAttempts) {
+              $statusResponse = Invoke-RestMethod -Uri "https://app.signpath.io/API/v1/$env:SIGNPATH_ORGANIZATION_ID/SigningRequests/$signingRequestId" `
+                -Headers @{ "Authorization" = "Bearer $env:SIGNPATH_API_TOKEN" }
+              
+              if ($statusResponse.status -eq "Completed") {
+                if ([string]::IsNullOrEmpty($statusResponse.signedArtifactLink)) {
+                  Write-Warning "Signing completed but no signedArtifactLink found for ${artifactType}. Retrying..."
+                } else {
+                  return $statusResponse.signedArtifactLink
+                }
+              } elseif ($statusResponse.status -eq "Failed") {
+                Write-Error "Signing failed for ${artifactType}: $($statusResponse.errorMessage)"
+                exit 1
+              }
+              
+              $attemptCount++
+              Start-Sleep -Seconds 20
+            }
+            
+            Write-Error "Signing did not complete successfully within the expected time for ${artifactType}"
+            exit 1
+          }
+
+          function Invoke-WebRequestWithRetry {
+              param (
+                  [hashtable]$Params,
+                  [int]$MaxAttempts = 3
+              )
+              
+              $attempt = 0
+              do {
+                  $attempt++
+                  try {
+                      Invoke-WebRequest @Params
+                      return
+                  } catch {
+                      if ($attempt -eq $MaxAttempts) {
+                          Write-Error "Failed to download after $MaxAttempts attempts: $_"
+                          throw
+                      }
+                      Write-Warning "Download attempt $attempt failed. Retrying in 10 seconds..."
+                      Start-Sleep -Seconds 10
+                  }
+              } while ($attempt -lt $MaxAttempts)
+          }
+
+          function Process-SignedArtifact {
+              param (
+                  [string]$artifactType,
+                  [string]$artifactPath,
+                  [string]$configSlug
+              )
+
+              if (!(Test-Path $artifactPath)) {
+                  Write-Error "${artifactType} file not found at path: $artifactPath"
+                  exit 1
+              }
+
+              try {
+                  $response = Invoke-RestMethod -Uri "https://app.signpath.io/API/v1/$env:SIGNPATH_ORGANIZATION_ID/SigningRequests" `
+                      -Method Post `
+                      -Headers @{
+                          "Authorization" = "Bearer $env:SIGNPATH_API_TOKEN"
+                      } `
+                      -Form @{
+                          "ProjectSlug" = $env:SIGNPATH_PROJECT_SLUG
+                          "SigningPolicySlug" = $env:SIGNPATH_SIGNING_POLICY_SLUG
+                          "ArtifactConfigurationSlug" = $configSlug
+                          "Artifact" = Get-Item -Path $artifactPath
+                          "Description" = $description
+                      }
+              } catch {
+                  Write-Error "Failed to initiate signing request for ${artifactType}: $_"
+                  exit 1
+              }
+
+              $signedArtifactLink = Wait-ForSigning -signingRequestId $response.signingRequestId -artifactType $artifactType
+
+              if ($signedArtifactLink -is [array]) {
+                  $signedArtifactLink = $signedArtifactLink | Where-Object { $_ -and $_ -match '^https?://' } | Select-Object -First 1
+              }
+
+              if ([string]::IsNullOrEmpty($signedArtifactLink)) {
+                  Write-Error "signedArtifactLink is null or empty after processing for ${artifactType}"
+                  exit 1
+              }
+
+              $signedArtifactLink = $signedArtifactLink.ToString().Trim()
+
+              $headers = @{
+                  "Authorization" = "Bearer $env:SIGNPATH_API_TOKEN"
+              }
+
+              $webRequestParams = @{
+                  Uri = [uri]::new($signedArtifactLink)
+                  Headers = $headers
+                  OutFile = "${{ github.workspace }}/signed-artifact.$($artifactType.ToLower())"
+                  TimeoutSec = 300  # 5 minutes timeout
+              }
+
+              try {
+                  Invoke-WebRequestWithRetry -Params $webRequestParams
+              } catch {
+                  Write-Error "Error during download for ${artifactType}: $_"
+                  exit 1
+              }
+
+              $artifactInfo = Get-Item "${{ github.workspace }}/signed-artifact.$($artifactType.ToLower())"
+              if ($artifactInfo.Length -eq 0) {
+                  Write-Error "Downloaded ${artifactType} file is empty"
+                  exit 1
+              }
+
+              Write-Output "Signed ${artifactType} saved successfully"
+          }
+
+          # Sign MSI
+          Process-SignedArtifact -artifactType "MSI" -artifactPath "${{ steps.locate-windows-artifacts.outputs.msi-path }}" -configSlug "Keeper_Desktop_MSI"
+
+          # Sign EXE
+          Process-SignedArtifact -artifactType "EXE" -artifactPath "${{ steps.locate-windows-artifacts.outputs.exe-path }}" -configSlug "Keeper_Desktop_EXE"
+
+      - name: Sign and rename Windows artifacts
+        if: matrix.platform == 'windows-latest'
+        run: |
+          # Find and rename MSI
+          $originalMsi = Get-ChildItem -Path "${{ github.workspace }}/src-tauri/target/release/bundle/msi" -Filter "*.msi" | Select-Object -First 1
+          $signedMsiName = $originalMsi.BaseName + "-signed" + $originalMsi.Extension
+          Move-Item -Force "${{ github.workspace }}/signed-artifact.msi" "${{ github.workspace }}/src-tauri/target/release/bundle/msi/$signedMsiName"
+          Write-Output "Signed MSI saved as: $signedMsiName"
+
+          # Find and rename EXE
+          $originalExe = Get-ChildItem -Path "${{ github.workspace }}/src-tauri/target/release" -Filter "*.exe" | Select-Object -First 1
+          $signedExeName = $originalExe.BaseName + "-signed" + $originalExe.Extension
+          Move-Item -Force "${{ github.workspace }}/signed-artifact.exe" "${{ github.workspace }}/src-tauri/target/release/$signedExeName"
+          Write-Output "Signed EXE saved as: $signedExeName"
+
+      - name: Upload signed Windows artifacts
         if: matrix.platform == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: signed-windows-artifacts
-          path: ${{ github.workspace }}/signed-artifacts/**/*
+          path: |
+            ${{ github.workspace }}/src-tauri/target/release/bundle/msi/*-signed.msi
+            ${{ github.workspace }}/src-tauri/target/release/*-signed.exe
           if-no-files-found: error
-
-      - name: Verify signed artifacts
-        if: matrix.platform == 'windows-latest'
-        run: |
-          if [ -z "$(ls -A '${{ github.workspace }}/signed-artifacts')" ]; then
-            echo "No signed artifacts found!"
-            exit 1
-          fi
 
       - name: Update release with signed Windows artifacts
         if: matrix.platform == 'windows-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          assets=()
-          for asset in "${{ github.workspace }}/signed-artifacts"/*; do
-            assets+=("-a" "$asset")
-          done
-          tag_name="${{ steps.tauri-build.outputs.tagName }}"
-          hub release edit "${assets[@]}" -m "" "$tag_name"
+          $signedMsi = Get-ChildItem -Path "${{ github.workspace }}/src-tauri/target/release/bundle/msi" -Filter "*-signed.msi" | Select-Object -First 1
+          $signedExe = Get-ChildItem -Path "${{ github.workspace }}/src-tauri/target/release" -Filter "*-signed.exe" | Select-Object -First 1
+
+          $version = (Select-String -Path "./src-tauri/Cargo.toml" -Pattern '^version = "(.*?)"').Matches.Groups[1].Value
+
+          $releases = gh release list --limit 20 --json tagName,name,isDraft,isPrerelease | ConvertFrom-Json
+
+          $releases | Format-Table -Property tagName, name, isDraft, isPrerelease
+
+          $releaseInfo = $releases | Where-Object { $_.isDraft -eq $true -and $_.name -match $version } | Select-Object -First 1
+
+          if (-not $releaseInfo) {
+            Write-Error "Could not find a draft release for version $version"
+            exit 1
+          }
+
+          $tagName = $releaseInfo.tagName
+
+          if ([string]::IsNullOrEmpty($tagName)) {
+            Write-Error "Could not find a draft release"
+            exit 1
+          }
+
+          Write-Output "Found draft release with tag: $tagName"
+
+          gh release upload $tagName $signedMsi.FullName --clobber
+
+          gh release upload $tagName $signedExe.FullName --clobber
+
+          gh release edit $tagName --notes ""

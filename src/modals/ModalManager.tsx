@@ -1,4 +1,3 @@
-import React from "react";
 import {
   DeviceActionModal,
   DeviceActionSuccessModal,
@@ -27,7 +26,7 @@ interface ModalsManagerProps {
   openModalHandler: (modal: ModalType) => void;
 }
 
-const ModalsManager: React.FC<ModalsManagerProps> = ({
+const ModalsManager = ({
   openModal,
   closeModalHandler,
   deviceType,
@@ -42,7 +41,7 @@ const ModalsManager: React.FC<ModalsManagerProps> = ({
   handleError,
   setCurrentAction,
   openModalHandler,
-}) => {
+}: ModalsManagerProps) => {
   return (
     <>
       <DeviceActionModal

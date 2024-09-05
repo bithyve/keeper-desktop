@@ -58,8 +58,8 @@
         "entitlements": "entitlements.plist"
       },
       "windows": {
-        "certificateThumbprint": "C4C61EC245C32CEE2CF718F4A2952915E4A730F9",
-        "digestAlgorithm": "sha256",
+        "certificateThumbprint": "C65BED6047BF3E1B42777C049CBC921F88E1B167",
+        "digestAlgorithm": "sha256WithRSAEncryption",
         "timestampUrl": "http://timestamp.comodoca.com"
       }
     }

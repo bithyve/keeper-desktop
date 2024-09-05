@@ -12,7 +12,7 @@ use tauri::Manager;
 use thiserror::Error;
 use tokio::time::timeout;
 
-const URL: &str = "https://keeper-channel.herokuapp.com/";
+static URL: &str = "https://bithyve-dev-relay.el.r.appspot.com:4002/";
 
 #[derive(Error, Debug)]
 pub enum ChannelError {

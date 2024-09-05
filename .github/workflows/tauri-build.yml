@@ -11,6 +11,7 @@ jobs:
   publish-tauri:
     permissions:
       contents: write
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -47,6 +48,18 @@ jobs:
         # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
         # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
 
+      - name: import windows certificate
+        if: matrix.platform == 'windows-latest'
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          New-Item -ItemType directory -Path certificate
+          Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_CERTIFICATE
+          certutil -decode certificate/tempCert.txt certificate/certificate.pfx
+          Remove-Item -path certificate -include tempCert.txt
+          Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText)
+
       - name: install frontend dependencies
         run: yarn install # change this to npm, pnpm or bun depending on which one you use.
 
@@ -67,43 +80,3 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-
-      - name: Sign Windows executables with SignPath
-        if: matrix.platform == 'windows-latest'
-        uses: SignPath/github-action-submit-signing-request@v1
-        with:
-          api-token: "${{ secrets.SIGNPATH_API_TOKEN }}"
-          organization-id: "${{ secrets.SIGNPATH_ORGANIZATION_ID }}"
-          project-slug: "${{ secrets.SIGNPATH_PROJECT_SLUG }}"
-          signing-policy-slug: "${{ secrets.SIGNPATH_SIGNING_POLICY_SLUG }}"
-          github-artifact-id: "${{ steps.tauri-build.outputs.artifactId }}"
-          wait-for-completion: true
-          output-artifact-directory: "${{ github.workspace }}/signed-artifacts"
-
-      - name: Upload signed artifacts
-        if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: signed-windows-artifacts
-          path: ${{ github.workspace }}/signed-artifacts/**/*
-          if-no-files-found: error
-
-      - name: Verify signed artifacts
-        if: matrix.platform == 'windows-latest'
-        run: |
-          if [ -z "$(ls -A '${{ github.workspace }}/signed-artifacts')" ]; then
-            echo "No signed artifacts found!"
-            exit 1
-          fi
-
-      - name: Update release with signed Windows artifacts
-        if: matrix.platform == 'windows-latest'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          assets=()
-          for asset in "${{ github.workspace }}/signed-artifacts"/*; do
-            assets+=("-a" "$asset")
-          done
-          tag_name="${{ steps.tauri-build.outputs.tagName }}"
-          hub release edit "${assets[@]}" -m "" "$tag_name"

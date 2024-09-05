@@ -5,6 +5,7 @@ import keeperLogo from "../../assets/keeper-logo.png";
 import bithyveLogo from "../../assets/bithyve-logo.svg";
 import loader from "../../assets/loader.svg";
 import styles from "./WelcomeScreen.module.css";
+import errorIcon from "../../assets/error-popup-icon.svg";
 
 const WelcomeScreen = () => {
   const [connectionState, setConnectionState] = useState<
@@ -13,13 +14,18 @@ const WelcomeScreen = () => {
   const [circleExpanded, setCircleExpanded] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
   const [slowContentVisible, setSlowContentVisible] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
 
   const connectChannel = useCallback(async () => {
     try {
       const connected = await invoke<boolean>("connect_channel");
       setConnectionState(connected ? "connected" : "failed");
+      if (!connected) {
+        setShowErrorToast(true);
+      }
     } catch {
       setConnectionState("failed");
+      setShowErrorToast(true);
     }
   }, []);
 
@@ -27,6 +33,7 @@ const WelcomeScreen = () => {
     setCircleExpanded(false);
     setSlowContentVisible(false);
     setContentVisible(false);
+    setShowErrorToast(false);
     connectChannel();
 
     const circleTimeout = setTimeout(() => {
@@ -50,7 +57,13 @@ const WelcomeScreen = () => {
 
   const handleReconnect = () => {
     setConnectionState("connecting");
+    setShowErrorToast(false);
     connectChannel();
+  };
+
+  const handleTryAgain = () => {
+    setShowErrorToast(false);
+    setConnectionState("failed");
   };
 
   return (
@@ -58,13 +71,30 @@ const WelcomeScreen = () => {
       className={`${styles.welcomeScreen} ${circleExpanded ? styles.circleExpanded : ""}`}
     >
       <div className={styles.circle}></div>
+      {showErrorToast && (
+        <div
+          className={`${styles.errorToast} ${slowContentVisible ? styles.slowVisible : ""}`}
+        >
+          <img src={errorIcon} alt="Error" className={styles.errorIcon} />
+          <div className={styles.errorMessage}>
+            <h3>Server Error</h3>
+            <p>
+              Failed to establish connection with Keeper server.
+              <br />
+              Please try again or contact support if issue persists.
+            </p>
+          </div>
+          <button onClick={handleTryAgain}>Try again</button>
+        </div>
+      )}
       <div
         className={`${styles.content} ${contentVisible ? styles.contentVisible : ""}`}
       >
         <img src={keeperLogo} alt="Keeper Logo" className={styles.keeperLogo} />
         <p className={styles.tagline}>Secure Today, Plan for Tomorrow</p>
         <div className={styles.dynamicContent}>
-          {connectionState === "connecting" && (
+          {(connectionState === "connecting" ||
+            (connectionState === "failed" && showErrorToast)) && (
             <img
               src={loader}
               alt="Connecting..."
@@ -80,21 +110,13 @@ const WelcomeScreen = () => {
               </button>
             </Link>
           )}
-          {connectionState === "failed" && (
-            <>
-              <p
-                className={`${styles.errorMessage} ${slowContentVisible ? styles.slowVisible : ""}`}
-              >
-                Failed to establish connection with the Keeper server. Please
-                try again or contact support if the issue persists.
-              </p>
-              <button
-                className={`${styles.btn} ${styles.reconnect} ${slowContentVisible ? styles.slowVisible : ""}`}
-                onClick={handleReconnect}
-              >
-                Reconnect
-              </button>
-            </>
+          {connectionState === "failed" && !showErrorToast && (
+            <button
+              className={`${styles.btn} ${styles.reconnect} ${slowContentVisible ? styles.slowVisible : ""}`}
+              onClick={handleReconnect}
+            >
+              Reconnect
+            </button>
           )}
         </div>
       </div>

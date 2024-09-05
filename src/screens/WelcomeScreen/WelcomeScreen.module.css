@@ -148,16 +148,77 @@
   align-items: center;
 }
 
-.errorMessage {
-  background-color: #f7f2ec;
-  color: #ff6b6b;
-  font-size: 14px;
-  margin: 70px 0 25px;
-  text-align: center;
-  padding: 15px;
-  border-radius: 5px;
-  border: 1px solid #ff6b6b;
+.errorToast {
+  position: absolute;
+  top: 20px;
+  left: 45%;
+  background-color: #e54545;
+  color: #fff;
+  padding: 14px 13px;
+  border-radius: 6px;
+  text-align: left;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 80%;
+  width: 450px;
+  display: flex;
+  align-items: center;
   opacity: 0;
+}
+
+.errorIcon {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  align-self: flex-start;
+  margin-top: 0px;
+}
+
+.errorMessage {
+  flex: 1;
+  width: 320px;
+}
+
+.errorToast h3 {
+  font-size: 14px;
+  padding: 0;
+  margin: 4px 0 10px 0;
+}
+
+.errorToast p {
+  font-size: 13px;
+  display: inline-block;
+  line-height: 22px;
+  padding: 0;
+  margin: 0;
+}
+
+.errorToast button {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: none;
+  padding: 7px 20px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  float: right;
+  align-self: flex-end;
+  margin-bottom: 0px;
+}
+
+.errorToast button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+.errorToast button:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 /* TODO: Move spinner to a shared component */
@@ -171,7 +232,7 @@
 .slowVisible {
   opacity: 1;
   transform: scale(1);
-  animation: fadeInScale 1s ease-out;
+  animation: fadeInScale 0.8s ease-out;
 }
 
 .slowVisible.loadingSpinner {

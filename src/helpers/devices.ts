@@ -1,13 +1,13 @@
 import bitboxIcon from "../assets/hww/icons/bitbox.svg";
 import trezorIcon from "../assets/hww/icons/trezor.svg";
 import ledgerIcon from "../assets/hww/icons/ledger.svg";
-// import coldcardIcon from "../assets/hww/icons/coldcard.svg";
-// import jadeIcon from "../assets/hww/icons/jade.svg";
+import coldcardIcon from "../assets/hww/icons/coldcard.svg";
+import jadeIcon from "../assets/hww/icons/jade.svg";
 import ledgerIconModal from "../assets/hww/icons-modal/ledger.svg";
 import trezorIconModal from "../assets/hww/icons-modal/trezor.svg";
 import bitboxIconModal from "../assets/hww/icons-modal/bitbox.svg";
-// import coldcardIconModal from "../assets/hww/icons-modal/coldcard.svg";
-// import jadeIconModal from "../assets/hww/icons-modal/jade.svg";
+import coldcardIconModal from "../assets/hww/icons-modal/coldcard.svg";
+import jadeIconModal from "../assets/hww/icons-modal/jade.svg";
 
 type NetworkType = "TESTNET" | "MAINNET";
 
@@ -35,26 +35,14 @@ const HWI_DEVICES = {
     icon: bitboxIcon,
     name: "BitBox02",
   },
-  // coldcard: {
-  //   icon: coldcardIcon,
-  //   name: "Coldcard",
-  // },
-  // jade: {
-  //   icon: jadeIcon,
-  //   name: "Jade",
-  // },
-  // BitBox01: {
-  //   icon: bitboxIcon,
-  //   name: "BitBox01",
-  // },
-  // KeepKey: {
-  //   icon: keepkeyIcon,
-  //   name: "KeepKey",
-  // },
-  // Other: {
-  //   icon: otherIcon,
-  //   name: "Other",
-  // },
+  coldcard: {
+    icon: coldcardIcon,
+    name: "Coldcard",
+  },
+  jade: {
+    icon: jadeIcon,
+    name: "Jade",
+  },
 };
 
 interface HWIDevice {
@@ -100,7 +88,9 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
       },
       registerMultisig: {
         text: "Please approve the registration of the multisig on the connected Ledger device.",
-        list: [],
+        list: [
+          "Make sure to verify the public keys and multisig details shown on the Ledger screen match the expected public keys of your cosigners and multisig details.",
+        ],
       },
       verifyAddress: {
         text: "Clicking below will display the address on your Ledger device, make sure to read it carefully and verify that it matches the address on your Keeper mobile app.",
@@ -174,7 +164,9 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
       },
       registerMultisig: {
         text: "Please approve the registration of the multisig on the connected BitBox02 device.",
-        list: [],
+        list: [
+          "Make sure to verify the public keys and multisig details shown on the BitBox02 screen match the expected public keys of your cosigners and multisig details.",
+        ],
       },
       verifyAddress: {
         text: "Clicking below will display the address on your BitBox02 device, make sure to read it carefully and verify that it matches the address on your Keeper mobile app.",
@@ -185,14 +177,82 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
       },
     },
   },
-  // coldcard: {
-  //   icon: coldcardIcon, // coldcardIconModal,
-  //   content: {},
-  // },
-  // jade: {
-  //   icon: jadeIcon, // jadeIconModal,
-  //   content: {},
-  // },
+  coldcard: {
+    icon: coldcardIconModal,
+    content: {
+      connect: {
+        text: "Your mobile app is trying to connect to Coldcard. Please connect your Coldcard to the computer and unlock it with your PIN to continue with Keeper Desktop app",
+        list: [],
+      },
+      shareXpubs: {
+        text: "Keep your Coldcard connected to the computer until the operation is completed.",
+        list: [],
+      },
+      healthCheck: {
+        text: "Your Mobile app is trying to perform a health check. Keep your Coldcard connected to the computer until the operation is completed.",
+        list: [
+          "Health check ensures the device holds the keys registered in the mobile app",
+        ],
+      },
+      signTx: {
+        text: "Please sign the transaction by approving it on your Coldcard.",
+        list: [
+          "Make sure to verify the address and the amount appearing on the screen of your Coldcard device are correct.",
+          "Only trust the information displayed on your Coldcard's screen, and only approve it if it matches the expected details.",
+        ],
+      },
+      registerMultisig: {
+        text: "Operation not supported on Coldcard via USB, please register the multisig via SD card or QR.",
+        list: [],
+      },
+      verifyAddress: {
+        text: "Clicking below will display the address on your Coldcard device, make sure to read it carefully and verify that it matches the address on your Keeper mobile app.",
+        list: [
+          "Only use the address from Keeper mobile app if it matches the address displayed on your Coldcard.",
+          "In case the address on your Coldcard is different than the address on the Keeper mobile app please contact support immediately.",
+        ],
+      },
+    },
+  },
+  jade: {
+    icon: jadeIconModal,
+    content: {
+      connect: {
+        text: "Your mobile app is trying to connect to Jade. Please connect your Jade to the computer and unlock it with your PIN to continue with Keeper Desktop app",
+        list: [],
+      },
+      shareXpubs: {
+        text: "Keep your Jade connected to the computer until the operation is completed.",
+        list: [],
+      },
+      healthCheck: {
+        text: "Your Mobile app is trying to perform a health check. Keep your Jade connected to the computer until the operation is completed.",
+        list: [
+          "Health check ensures the device holds the keys registered in the mobile app",
+        ],
+      },
+      signTx: {
+        text: "Please sign the transaction by approving it on your Jade.",
+        list: [
+          "Make sure to verify the address and the amount appearing on the screen of your Jade device are correct.",
+          "Only trust the information displayed on your Jade's screen, and only approve it if it matches the expected details.",
+        ],
+      },
+      registerMultisig: {
+        text: "Please approve the registration of the multisig on the connected Jade device.",
+        list: [
+          "Make sure to verify the public keys and multisig details shown on the Jade screen match the expected public keys of your cosigners and multisig details.",
+        ],
+      },
+      verifyAddress: {
+        text: "Clicking below will display the address on your Jade device, make sure to read it carefully and verify that it matches the address on your Keeper mobile app.",
+        list: [
+          "Only use the address from Keeper mobile app if it matches the address displayed on your Jade.",
+          "In case the address on your Jade is different than the address on the Keeper mobile app please contact support immediately.",
+        ],
+      },
+    },
+  },
 };
 
 export {

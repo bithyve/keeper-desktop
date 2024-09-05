@@ -23,9 +23,6 @@
         ],
         "all": false,
         "open": true
-      },
-      "fs": {
-        "scope": ["$RESOURCE/*"]
       }
     },
     "windows": [
@@ -59,7 +56,7 @@
       },
       "windows": {
         "certificateThumbprint": "C65BED6047BF3E1B42777C049CBC921F88E1B167",
-        "digestAlgorithm": "sha256WithRSAEncryption",
+        "digestAlgorithm": "sha256",
         "timestampUrl": "http://timestamp.comodoca.com"
       }
     }

@@ -52,7 +52,7 @@ const hwiService = {
     descriptor: string,
     expectedAddress: string,
   ): Promise<void> => {
-    const eventData = await invoke<void>("verify_address", {
+    const eventData = await invoke<void>("hwi_verify_address", {
       descriptor,
       expectedAddress,
     });

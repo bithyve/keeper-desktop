@@ -73,9 +73,9 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          TAURI_PRIVATE_KEY: "${{ secrets.TAURI_PRIVATE_KEY }}"
-          TAURI_KEY_PASSWORD: "${{ secrets.TAURI_KEY_PASSWORD }}"
-          TAURI_PUBLIC_KEY: "${{ secrets.TAURI_PUBLIC_KEY }}"
+          TAURI_SIGNING_PRIVATE_KEY: "${{ secrets.TAURI_PRIVATE_KEY }}"
+          TAURI_SIGNING_KEY_PASSWORD: "${{ secrets.TAURI_KEY_PASSWORD }}"
+          TAURI_SIGNING_PUBLIC_KEY: "${{ secrets.TAURI_PUBLIC_KEY }}"
         with:
           tagName: keeper-desktop-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
           releaseName: "Keeper Desktop v__VERSION__"

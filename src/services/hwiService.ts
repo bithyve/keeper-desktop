@@ -1,21 +1,43 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { HWIDevice, HWIDeviceType } from "../helpers/devices";
 
+interface Result<T> {
+  Ok: T;
+  Err: string;
+}
+
+const emptyTrezorDevice: HWIDevice = {
+  device_type: "trezor",
+  needs_pin_sent: true,
+  model: "",
+  path: "",
+  needs_passphrase_sent: false,
+  fingerprint: null,
+};
+
 const hwiService = {
   fetchDevices: async (
     deviceType: HWIDeviceType | null = null,
   ): Promise<HWIDevice[]> => {
-    const devices = await invoke<HWIDevice[]>("hwi_enumerate");
-    return devices
-      .filter((device) => !deviceType || device.device_type === deviceType)
+    const devices = await invoke<Result<HWIDevice>[]>("hwi_enumerate");
+    const updatedDevices = devices.map((device) =>
+      device.Err && device.Err.includes("Trezor is locked")
+        ? { Ok: emptyTrezorDevice }
+        : device,
+    );
+    return updatedDevices
+      .filter(
+        (device) =>
+          !deviceType || (device.Ok && device.Ok.device_type === deviceType),
+      )
       .map((device) => ({
-        ...device,
-        device_type: device.device_type.toLowerCase() as HWIDeviceType,
+        ...device.Ok,
+        device_type: device.Ok.device_type.toLowerCase() as HWIDeviceType,
       }));
   },
 
   setHWIClient: async (
-    fingerprint: string,
+    fingerprint: string | null,
     deviceType: string,
     network: string,
   ): Promise<void> => {
@@ -57,6 +79,10 @@ const hwiService = {
       expectedAddress,
     });
     await invoke<void>("emit_to_channel", { eventData });
+  },
+
+  promptPin: async (): Promise<void> => {
+    await invoke<void>("hwi_prompt_pin");
   },
 
   sendPin: async (pin: string): Promise<void> => {

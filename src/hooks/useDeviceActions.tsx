@@ -32,7 +32,7 @@ export const useDeviceActions = ({
       switch (actionType) {
         case "connect": {
           const devices = await hwiService.fetchDevices(deviceType);
-          onConnectResult(devices);
+          await onConnectResult(devices);
           break;
         }
         case "shareXpubs":

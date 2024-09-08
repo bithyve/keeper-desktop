@@ -6,7 +6,12 @@ import {
   ErrorModal,
   TrezorPinModal,
 } from "./index";
-import { HWI_ACTION, HWIDevice, HWIDeviceType } from "../helpers/devices";
+import {
+  HWI_ACTION,
+  HWIDevice,
+  HWIDeviceType,
+  NetworkType,
+} from "../helpers/devices";
 import { ModalType } from "../hooks/useModalState";
 
 interface ModalsManagerProps {
@@ -15,6 +20,7 @@ interface ModalsManagerProps {
   deviceType: HWIDeviceType | null;
   currentAction: HWI_ACTION;
   actionType: HWI_ACTION | null;
+  network: NetworkType | null;
   psbt: string | null;
   descriptor: string | null;
   expectedAddress: string | null;
@@ -32,6 +38,7 @@ const ModalsManager = ({
   deviceType,
   currentAction,
   actionType,
+  network,
   psbt,
   descriptor,
   expectedAddress,
@@ -99,6 +106,7 @@ const ModalsManager = ({
       />
       <TrezorPinModal
         isOpen={openModal === "pin"}
+        network={network}
         onClose={closeModalHandler}
         onSuccess={() => {
           openModalHandler("deviceActionSuccess");

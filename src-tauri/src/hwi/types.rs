@@ -163,7 +163,7 @@ pub struct HWIDevice {
     pub path: String,
     pub needs_pin_sent: bool,
     pub needs_passphrase_sent: bool,
-    pub fingerprint: Fingerprint,
+    pub fingerprint: Option<Fingerprint>,
 }
 
 impl TryFrom<HWIDeviceInternal> for HWIDevice {
@@ -188,7 +188,7 @@ impl TryFrom<HWIDeviceInternal> for HWIDevice {
                 needs_passphrase_sent: h
                     .needs_passphrase_sent
                     .expect("needs_passphrase_sent should be here"),
-                fingerprint: h.fingerprint.expect("Fingerprint should be here"),
+                fingerprint: h.fingerprint,
             }),
         }
     }
@@ -305,6 +305,7 @@ pub trait HWIImplementation {
     fn restore_device(&self, label: &str, word_count: u8) -> Result<String, Error>;
     fn backup_device(&self, label: &str, backup_passphrase: &str) -> Result<String, Error>;
     fn wipe_device(&self) -> Result<String, Error>;
+    fn prompt_pin(&self) -> Result<String, Error>;
     fn send_pin(&self, pin: &str) -> Result<String, Error>;
     fn get_descriptors(&self, account: u32) -> Result<String, Error>;
     #[allow(clippy::too_many_arguments)]

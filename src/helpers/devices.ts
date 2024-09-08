@@ -51,7 +51,7 @@ interface HWIDevice {
   path: string;
   needs_pin_sent: boolean;
   needs_passphrase_sent: boolean;
-  fingerprint: string;
+  fingerprint: string | null;
 }
 
 interface DeviceContent {

@@ -69,7 +69,13 @@ impl<T: HWIBinaryExecutor> HWIImplementation for BinaryHWIImplementation<T> {
             .into_iter()
             .find(|d| {
                 device_type.as_ref().map_or(true, |t| &d.device_type == t)
-                    && fingerprint.map_or(true, |f| d.fingerprint.to_string() == f)
+                    && fingerprint.map_or(true, |f| {
+                        if let Some(df) = d.fingerprint {
+                            df.to_string() == f
+                        } else {
+                            false
+                        }
+                    })
             })
             .ok_or_else(|| Error::Hwi("No matching device found".to_string(), None))?;
 
@@ -283,6 +289,16 @@ impl<T: HWIBinaryExecutor> HWIImplementation for BinaryHWIImplementation<T> {
         )
     }
 
+    fn prompt_pin(&self) -> Result<String, Error> {
+        let args = vec!["promptpin"];
+        BinaryHWIImplementation::<T>::run_hwi_command(
+            self.device.as_ref(),
+            self.expert,
+            Some(&self.chain),
+            args,
+        )
+    }
+
     fn send_pin(&self, pin: &str) -> Result<String, Error> {
         let args = vec!["sendpin", pin];
         BinaryHWIImplementation::<T>::run_hwi_command(
@@ -313,11 +329,17 @@ impl<T: HWIBinaryExecutor> BinaryHWIImplementation<T> {
         let mut command_args = Vec::new();
 
         if !args.contains(&"enumerate") && !args.contains(&"--version") {
-            let fingerprint = device
-                .ok_or(Error::Hwi("Device fingerprint not set".to_string(), None))?
-                .fingerprint;
-            command_args.push("--fingerprint".to_string());
-            command_args.push(fingerprint.to_string());
+            let device = device.ok_or(Error::Hwi("Device not set".to_string(), None))?;
+            if let Some(fingerprint) = device.fingerprint {
+                command_args.push("--fingerprint".to_string());
+                command_args.push(fingerprint.to_string());
+            } else {
+                command_args.push("--device-type".to_string());
+                command_args.push(device.device_type.to_string());
+                // This is needed due to this bug in HWI: https://github.com/bitcoin-core/HWI/issues/636
+                command_args.push("-d".to_string());
+                command_args.push(device.path.to_string());
+            }
         }
 
         if expert {

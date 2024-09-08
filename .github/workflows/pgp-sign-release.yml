@@ -19,16 +19,16 @@ jobs:
 
       - name: Import GPG key
         env:
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          PGP_PRIVATE_KEY: ${{ secrets.PGP_PRIVATE_KEY }}
+          PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
         run: |
-          echo "$TAURI_PRIVATE_KEY" | gpg --batch --yes --import
-          echo "$TAURI_KEY_PASSWORD" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --change-passphrase $(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ { print $5 }')
+          echo "$PGP_PRIVATE_KEY" | gpg --batch --yes --import
+          echo "$PGP_PASSWORD" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --change-passphrase $(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ { print $5 }')
 
       - name: Create and Sign SHA256SUMS
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
         run: |
           version=$(grep '^version =' src-tauri/Cargo.toml | cut -d '"' -f2)
           echo "Version: $version"
@@ -55,7 +55,7 @@ jobs:
           sha256sum * > SHA256SUMS.txt
 
           # Sign SHA256SUMS.txt
-          gpg --batch --yes --passphrase "$TAURI_KEY_PASSWORD" --pinentry-mode loopback --clearsign SHA256SUMS.txt
+          gpg --batch --yes --passphrase "$PGP_PASSWORD" --pinentry-mode loopback --clearsign SHA256SUMS.txt
 
           # Upload SHA256SUMS.txt and SHA256SUMS.txt.asc
           gh release upload "$tagName" SHA256SUMS.txt SHA256SUMS.txt.asc --clobber

@@ -16,12 +16,19 @@ pub fn get_xpub(hwi_state: &HWIClientState) -> Result<serde_json::Value, HWIErro
     let single_sig_xpub = hwi_state.hwi.get_xpub(&ss_path, false)?;
     let multi_sig_xpub = hwi_state.hwi.get_xpub(&ms_path, false)?;
 
+    if hwi_state.fingerprint.is_none() {
+        return Err(HWIError::Hwi(
+            "Device fingerpring is missing".to_string(),
+            None,
+        ));
+    }
+
     Ok(json!({
         "singleSigPath": format!("m/{}", ss_path.to_string()),
         "singleSigXpub": single_sig_xpub.to_string(),
         "multiSigPath": format!("m/{}", ms_path.to_string()),
         "multiSigXpub": multi_sig_xpub.to_string(),
-        "mfp": hwi_state.fingerprint.to_string().to_uppercase(),
+        "mfp": hwi_state.fingerprint.as_ref().unwrap().to_string().to_uppercase(),
     }))
 }
 

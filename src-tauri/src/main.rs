@@ -29,7 +29,7 @@ pub struct HWIClientState {
     hwi: HWIAppClient,
     #[allow(dead_code)]
     device_type: HWIDeviceType,
-    fingerprint: String,
+    fingerprint: Option<String>,
     network: bitcoin::Network,
 }
 
@@ -98,17 +98,21 @@ fn emit_to_channel(state: State<'_, AppState>, event_data: Value) -> Result<(), 
 // ==================== HWI Commands ====================
 
 #[tauri::command]
-async fn hwi_enumerate(_: State<'_, AppState>) -> Result<Vec<HWIDevice>, String> {
+async fn hwi_enumerate(_: State<'_, AppState>) -> Result<Vec<Result<HWIDevice, String>>, String> {
     HWIAppClient::enumerate()
-        // TODO: handle devices with error
-        .map(|devices| devices.into_iter().filter_map(Result::ok).collect())
+        .map(|devices| {
+            devices
+                .into_iter()
+                .map(|device| device.map_err(|e| e.to_string()))
+                .collect()
+        })
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 fn set_hwi_client(
     state: State<'_, AppState>,
-    fingerprint: String,
+    fingerprint: Option<String>,
     device_type: HWIDeviceType,
     network: bitcoin::Network,
 ) -> Result<(), String> {
@@ -116,7 +120,7 @@ fn set_hwi_client(
     let client = HWIAppClient::find_device(
         None,
         Some(device_type.clone()),
-        Some(&fingerprint),
+        fingerprint.as_deref(),
         false,
         network,
     )
@@ -243,8 +247,15 @@ async fn hwi_verify_address(
 }
 
 #[tauri::command]
-async fn hwi_send_pin(state: State<'_, AppState>, pin: String) -> Result<(), String> {
+async fn hwi_prompt_pin(state: State<'_, AppState>) -> Result<(), String> {
     let state = state.lock().await;
+    let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
+    hwi_state.hwi.prompt_pin().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn hwi_send_pin(state: State<'_, AppState>, pin: String) -> Result<(), String> {
+    let state: tokio::sync::MutexGuard<'_, AppStateInner> = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     hwi_state.hwi.send_pin(&pin).map_err(|e| e.to_string())
 }
@@ -289,7 +300,8 @@ fn main() {
             hwi_register_multisig,
             hwi_verify_address,
             emit_to_channel,
-            hwi_send_pin
+            hwi_send_pin,
+            hwi_prompt_pin
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

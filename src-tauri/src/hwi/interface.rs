@@ -301,6 +301,13 @@ impl<T: HWIImplementation> HWIClient<T> {
         status.into()
     }
 
+    /// Prompt PIN to a device
+    pub fn prompt_pin(&self) -> Result<(), Error> {
+        let output = self.implementation.prompt_pin()?;
+        let status: HWIStatus = deserialize_obj!(&output)?;
+        status.into()
+    }
+
     /// Send PIN to a device
     pub fn send_pin(&self, pin: &str) -> Result<(), Error> {
         let output = self.implementation.send_pin(pin)?;

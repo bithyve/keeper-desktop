@@ -55,6 +55,7 @@ const ConnectScreen = () => {
           network.toLowerCase(),
         );
         if (devices[0].needs_pin_sent) {
+          await hwiService.promptPin();
           openModalHandler("pin");
         } else {
           openModalHandler("deviceActionSuccess");
@@ -206,6 +207,7 @@ const ConnectScreen = () => {
           deviceType={deviceType}
           currentAction={currentAction}
           actionType={actionType}
+          network={network}
           psbt={psbt}
           descriptor={descriptor}
           expectedAddress={expectedAddress}

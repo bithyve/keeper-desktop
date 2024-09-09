@@ -2,7 +2,7 @@ name: PGP sign release
 
 on:
   workflow_run:
-    workflows: ["publish"]
+    workflows: ["release"]
     types:
       - completed
 

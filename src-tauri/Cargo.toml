@@ -26,5 +26,6 @@ env_logger = "0.10"
 bitcoin = { version = "0.32.2", features = ["serde", "base64"] }
 
 [features]
+release = []
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]

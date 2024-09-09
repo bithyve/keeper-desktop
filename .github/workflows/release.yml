@@ -20,7 +20,7 @@ jobs:
             args: "--target aarch64-apple-darwin"
           - platform: "macos-latest" # for Intel based macs.
             args: "--target x86_64-apple-darwin"
-          - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
+          - platform: "ubuntu-20.04" # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ""
           - platform: "windows-latest"
             args: ""
@@ -61,7 +61,7 @@ jobs:
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText)
 
       - name: install frontend dependencies
-        run: yarn install # change this to npm, pnpm or bun depending on which one you use.
+        run: npm install
 
       - uses: tauri-apps/tauri-action@v0
         id: tauri-build
@@ -79,4 +79,4 @@ jobs:
           releaseBody: "See the assets to download this version and install."
           releaseDraft: true
           prerelease: false
-          args: ${{ matrix.args }}
+          args: ${{ matrix.args }} --config src-tauri/tauri.release.conf.json

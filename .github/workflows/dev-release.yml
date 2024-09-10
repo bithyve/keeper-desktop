@@ -1,9 +1,9 @@
-name: "publish"
+name: "dev-release"
 
 on:
   push:
     branches:
-      - release
+      - dev-release
 
 # This workflow will trigger on each push to the `release` branch to create or update a GitHub release, build your app, and upload the artifacts to the release.
 
@@ -20,7 +20,7 @@ jobs:
             args: "--target aarch64-apple-darwin"
           - platform: "macos-latest" # for Intel based macs.
             args: "--target x86_64-apple-darwin"
-          - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
+          - platform: "ubuntu-20.04" # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ""
           - platform: "windows-latest"
             args: ""
@@ -41,12 +41,10 @@ jobs:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        if: matrix.platform == 'ubuntu-20.04' # This must match the platform value defined above.
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-        # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
-        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: import windows certificate
         if: matrix.platform == 'windows-latest'
@@ -61,7 +59,7 @@ jobs:
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText)
 
       - name: install frontend dependencies
-        run: yarn install # change this to npm, pnpm or bun depending on which one you use.
+        run: npm install
 
       - uses: tauri-apps/tauri-action@v0
         id: tauri-build
@@ -74,9 +72,9 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
-          tagName: keeper-desktop-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: "Keeper Desktop v__VERSION__"
-          releaseBody: "See the assets to download this version and install."
+          tagName: keeper-desktop-v__VERSION__-dev # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          releaseName: "Keeper Desktop v__VERSION__ (dev)"
+          releaseBody: "This is a development version of Keeper Desktop. It is not meant for production use."
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

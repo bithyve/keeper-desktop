@@ -17,6 +17,7 @@ import {
 } from "../../helpers/devices";
 import ModalsManager from "../../modals/ModalManager";
 import hwiService from "../../services/hwiService";
+import { version } from "../../../package.json";
 
 interface ChannelMessagePayload {
   data: {
@@ -219,6 +220,7 @@ const ConnectScreen = () => {
           openModalHandler={openModalHandler}
         />
       )}
+      <div className={styles.versionTag}>Version {version}</div>
     </div>
   );
 };

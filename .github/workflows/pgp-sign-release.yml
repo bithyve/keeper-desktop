@@ -34,7 +34,7 @@ jobs:
           echo "Version: $version"
 
           releases=$(gh release list --limit 20 --json tagName,name,isDraft,isPrerelease)
-          releaseInfo=$(echo "$releases" | jq -r '.[] | select(.isDraft == true and (.tagName | startswith("v'"$version"'"))) | .tagName' | head -n1)
+          releaseInfo=$(echo "$releases" | jq -r '.[] | select(.isDraft == true and (.tagName | contains("'"$version"'"))) | .tagName' | head -n1)
 
           if [ -z "$releaseInfo" ]; then
             echo "Error: Could not find a draft release for version $version"

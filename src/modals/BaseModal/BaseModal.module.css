@@ -1,0 +1,101 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: #f7f2ec;
+  padding: 50px 20px 20px;
+  border-radius: 12px;
+  width: 85%;
+  max-width: 370px;
+  min-height: 30px;
+  max-height: 550px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  text-align: center;
+}
+
+.closeButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #888;
+}
+
+.title {
+  font-size: 18px;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+.text {
+  font-size: 15px;
+  color: #3e524d;
+  margin: 0 7%;
+  font-weight: light;
+  line-height: 20px;
+}
+
+.continueButton {
+  background-color: #2d6759;
+  color: #fff;
+  border: none;
+  padding: 15px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px;
+  position: relative;
+}
+
+.continueButton:hover {
+  background-color: #1e4d3f;
+}
+
+.modalContent ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.modalContent li {
+  color: #3e524d;
+  position: relative;
+  padding-left: 15px;
+  margin: 15px 0;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+}
+
+.modalContent li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  background-color: #073b36;
+  border-radius: 50%;
+}

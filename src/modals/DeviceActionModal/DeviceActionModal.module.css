@@ -1,0 +1,23 @@
+.icon {
+  width: 130px;
+  height: 130px;
+}
+
+.continueButton:disabled {
+  opacity: 0.5;
+}
+
+.loadingSpinner {
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

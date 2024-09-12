@@ -1,0 +1,294 @@
+.welcomeScreen {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  color: #fff6de;
+  background-color: #fdf7f0;
+}
+
+.circle {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(180deg, #2d6759 30%, #0f7a60 100%);
+  border-radius: 50%;
+  transition:
+    transform 2.5s ease-in-out,
+    width 2.5s ease-in-out,
+    height 2.5s ease-in-out;
+  z-index: 0;
+}
+
+.circleExpanded .circle {
+  transform: scale(20);
+}
+
+.expandCircle {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(180deg, #2d6759 30%, #0f7a60 100%);
+  border-radius: 50%;
+  animation: expand 2.5s ease-out forwards;
+}
+
+.keeperLogo,
+.tagline,
+.footer {
+  animation: fadeInScale 3s ease-out 1.5s both; /* Increased duration */
+  opacity: 0;
+}
+
+.contentVisible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 500px;
+  animation: fadeInScale 3s ease-out 1.5s both; /* Increased duration */
+  opacity: 0;
+}
+
+.keeperLogo {
+  width: 310px;
+  height: 132px;
+  margin-bottom: 0px;
+}
+
+.tagline {
+  margin-top: 10px;
+  font-size: 19px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  margin-bottom: 30px;
+  text-align: center;
+  color: #fff6de;
+}
+
+.footer {
+  position: absolute;
+  bottom: 35px;
+  font-size: 16px;
+  text-align: center;
+  font-weight: 100;
+}
+
+.bithyveSymbol {
+  margin-left: 10px;
+}
+
+.bithyveLogo {
+  height: 24px;
+  margin-right: 5px;
+  vertical-align: middle;
+  display: inline-block;
+  vertical-align: middle;
+  margin-bottom: 4px;
+}
+
+.hyve {
+  font-weight: bold;
+}
+
+.btn {
+  width: 142px;
+  height: 42px;
+  padding: 13px 19.05px 9px 20px;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 10px;
+  background: var(--Primary-Cream, #f7f2ec);
+  color: var(--Primary-Green, #2d6759);
+  text-align: center;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+  transition: none;
+  opacity: 0;
+}
+
+.btn:hover {
+  background-color: #fdf7f0;
+  box-shadow: 0 2px 8px rgba(45, 103, 89, 0.2);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+.btn.reconnect {
+  padding-bottom: 20px;
+}
+
+.btn.reconnect:disabled {
+  background-color: transparent;
+  cursor: default;
+}
+
+.dynamicContent {
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.errorToast {
+  position: absolute;
+  top: 20px;
+  left: 45%;
+  background-color: #e54545;
+  color: #fff;
+  padding: 14px 13px;
+  border-radius: 6px;
+  text-align: left;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 80%;
+  width: 450px;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+}
+
+.errorIcon {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  align-self: flex-start;
+  margin-top: 0px;
+}
+
+.errorMessage {
+  flex: 1;
+  width: 320px;
+}
+
+.errorToast h3 {
+  font-size: 14px;
+  padding: 0;
+  margin: 4px 0 10px 0;
+}
+
+.errorToast p {
+  font-size: 13px;
+  display: inline-block;
+  line-height: 22px;
+  padding: 0;
+  margin: 0;
+}
+
+.errorToast button {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: none;
+  padding: 7px 20px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  float: right;
+  align-self: flex-end;
+  margin-bottom: 0px;
+}
+
+.errorToast button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+.errorToast button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* TODO: Move spinner to a shared component */
+.loadingSpinner {
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+  opacity: 0;
+}
+
+.slowVisible {
+  opacity: 1;
+  transform: scale(1);
+  animation: fadeInScale 0.8s ease-out;
+}
+
+.slowVisible.loadingSpinner {
+  animation:
+    fadeIn 0.5s ease-out,
+    spin 1s linear infinite;
+  animation-fill-mode: forwards;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes expand {
+  0% {
+    width: 100px;
+    height: 100px;
+    opacity: 1;
+  }
+  100% {
+    width: 3000px; /* Large enough to cover the entire screen */
+    height: 3000px;
+    opacity: 1;
+  }
+}

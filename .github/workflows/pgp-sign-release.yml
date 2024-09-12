@@ -1,0 +1,64 @@
+name: PGP sign release
+
+on:
+  workflow_run:
+    workflows: ["release", "dev-release"]
+    types:
+      - completed
+
+jobs:
+  sign-release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install GPG
+        run: sudo apt-get install -y gnupg
+
+      - name: Import GPG key
+        env:
+          PGP_PRIVATE_KEY: ${{ secrets.PGP_PRIVATE_KEY }}
+          PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
+        run: |
+          echo "$PGP_PRIVATE_KEY" | gpg --batch --yes --import
+          echo "$PGP_PASSWORD" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --change-passphrase $(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ { print $5 }')
+
+      - name: Create and Sign SHA256SUMS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
+        run: |
+          version=$(grep '^version =' src-tauri/Cargo.toml | cut -d '"' -f2)
+          echo "Version: $version"
+
+          releases=$(gh release list --limit 20 --json tagName,name,isDraft,isPrerelease)
+          releaseInfo=$(echo "$releases" | jq -r '.[] | select(.isDraft == true and (.tagName | contains("'"$version"'"))) | .tagName' | head -n1)
+
+          if [ -z "$releaseInfo" ]; then
+            echo "Error: Could not find a draft release for version $version"
+            exit 1
+          fi
+
+          tagName="$releaseInfo"
+          echo "Found draft release: $tagName"
+
+          # Create a temporary directory for downloaded assets
+          mkdir -p tmp_assets
+          cd tmp_assets
+
+          # Download all assets
+          gh release download "$tagName" --pattern "*"
+
+          # Create SHA256SUMS.txt
+          sha256sum * > SHA256SUMS.txt
+
+          # Sign SHA256SUMS.txt
+          gpg --batch --yes --passphrase "$PGP_PASSWORD" --pinentry-mode loopback --detach-sig --armor SHA256SUMS.txt
+
+          # Upload SHA256SUMS.txt and SHA256SUMS.txt.asc
+          gh release upload "$tagName" SHA256SUMS.txt SHA256SUMS.txt.asc --clobber
+
+          cd ..
+          rm -rf tmp_assets

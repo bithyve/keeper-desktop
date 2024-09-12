@@ -1,0 +1,31 @@
+[package]
+name = "keeper-desktop"
+version = "0.1.0"
+description = "Bitcoin Keeper Desktop App"
+authors = ["Ben Kaufman"]
+repository = "https://github.com/bithyve/keeper-desktop"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1", features = [] }
+
+[dependencies]
+tauri = { version = "1", features = [ "shell-sidecar", "process-command-api", "shell-open"] }
+tokio = { version = "1", features = ["time"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10.6"
+aes-gcm = "0.10.3"
+rust_socketio = "0.6.0"
+hex = "0.4.3"
+log = "0.4"
+thiserror = "1.0"
+env_logger = "0.10"
+bitcoin = { version = "0.32.2", features = ["serde", "base64"] }
+
+[features]
+release = []
+# This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

@@ -1,0 +1,182 @@
+.connectScreen {
+  width: 100%;
+  min-height: 100vh;
+  height: auto;
+  display: flex;
+  color: #fdf7f0;
+  padding: 32px 54px;
+  box-sizing: border-box;
+  position: relative;
+  padding-bottom: 45px;
+}
+
+.leftSection {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  padding-right: 20px;
+}
+
+.keeperLogo {
+  width: 139px;
+  height: 78px;
+}
+
+.title {
+  margin-top: 38px;
+  max-width: 345px;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: normal;
+  margin-bottom: 0px;
+}
+
+.instructionsContainer {
+  margin-top: 25px;
+  max-width: 350px;
+}
+
+.instructionsTitle {
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.instructionsIcon {
+  width: 19px;
+  height: 22px;
+  margin-right: 10px;
+}
+
+.instructionsList {
+  padding-left: 20px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.instructionsList li {
+  margin-bottom: 20px;
+}
+
+.note {
+  margin-top: auto;
+  padding-top: 15px;
+  width: 355px;
+}
+
+.note h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 0px;
+}
+
+.note p {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 200;
+  line-height: 17px;
+  font-weight: 400;
+}
+
+.qrContainer {
+  width: 45%;
+  background-color: #fdf7f0;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #2d6759;
+  margin-top: 35px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.qrCode {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  background-color: #2d6759;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-top: 50px;
+}
+
+.scanMe {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fdf7f0;
+  margin-top: 22px;
+  margin-bottom: 16px;
+}
+
+.qrNote {
+  max-width: 230px;
+  color: var(--Secondary-Caption, #878787);
+  text-align: center;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 200;
+  line-height: 20px;
+}
+
+.qrImage {
+  width: 200px;
+  height: 200px;
+  margin-top: 20px;
+}
+
+.regenerateButton {
+  position: absolute;
+  bottom: 12px;
+  right: 27px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition:
+    transform 0.3s ease,
+    background-color 0.3s ease;
+  border-radius: 50%;
+}
+
+.regenerateButton img {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.regenerateButton:hover {
+  transform: scale(1.1);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.regenerateButton:hover img {
+  transform: rotate(180deg);
+}
+
+.regenerateButton:active {
+  transform: scale(0.95);
+}
+
+.versionTag {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}

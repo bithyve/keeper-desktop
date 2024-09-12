@@ -55,7 +55,7 @@ jobs:
           sha256sum * > SHA256SUMS.txt
 
           # Sign SHA256SUMS.txt
-          gpg --batch --yes --passphrase "$PGP_PASSWORD" --pinentry-mode loopback --clearsign SHA256SUMS.txt
+          gpg --batch --yes --passphrase "$PGP_PASSWORD" --pinentry-mode loopback --detach-sig --armor SHA256SUMS.txt
 
           # Upload SHA256SUMS.txt and SHA256SUMS.txt.asc
           gh release upload "$tagName" SHA256SUMS.txt SHA256SUMS.txt.asc --clobber

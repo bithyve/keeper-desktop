@@ -57,7 +57,10 @@
       "windows": {
         "certificateThumbprint": "C65BED6047BF3E1B42777C049CBC921F88E1B167",
         "digestAlgorithm": "sha256",
-        "timestampUrl": "http://timestamp.comodoca.com"
+        "timestampUrl": "http://timestamp.comodoca.com",
+        "nsis": {
+          "installerIcon": "icons/icon.ico"
+        }
       }
     }
   }

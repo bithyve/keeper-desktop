@@ -106,7 +106,11 @@ impl Channel {
             if let Some(client) = &self.client {
                 let mut data = json!({"room": room, "data": encrypted});
                 if let Some(network) = network {
-                    data["network"] = serde_json::Value::String(network.to_string());
+                    data["network"] = serde_json::Value::String(if network == "bitcoin" {
+                        "MAINNET".to_string()
+                    } else {
+                        "TESTNET".to_string()
+                    });
                 }
                 client
                     .emit(event, data)

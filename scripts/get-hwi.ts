@@ -10,7 +10,7 @@ import * as openpgp from "openpgp";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const HWI_VERSION = "3.0.0";
+const HWI_VERSION = "3.1.0";
 const HWI_BASE_URL = `https://github.com/bitcoin-core/HWI/releases/download/${HWI_VERSION}`;
 const BINARY_DIR = path.join(__dirname, "..", "src-tauri", "binaries");
 const PUBLIC_KEY_PATH = path.join(__dirname, "resources", "achow-key.asc");

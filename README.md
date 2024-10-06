@@ -1,6 +1,6 @@
 # Keeper Desktop
 
-Keeper Desktop is a a secure, cross-platform desktop app for using hardhaware wallets with the Bitcoin Keeper mobile app.
+Keeper Desktop is a a secure, cross-platform desktop app for using harsware wallets with the Bitcoin Keeper mobile app.
 
 ## Getting Started
 

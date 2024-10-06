@@ -41,6 +41,9 @@ const hwiService = {
     deviceType: string,
     network: string,
   ): Promise<void> => {
+    if (network === "mainnet") {
+      network = "bitcoin";
+    }
     await invoke<void>("set_hwi_client", { fingerprint, deviceType, network });
   },
 

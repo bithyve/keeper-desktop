@@ -182,10 +182,19 @@ async function shouldDownloadBinaries(): Promise<boolean> {
   }
 }
 
-async function main() {
+async function main(shouldCleanup: boolean = false) {
+  console.log("Starting HWI binary process...");
   try {
-    const isEmpty = await shouldDownloadBinaries();
-    if (!isEmpty) {
+    if (shouldCleanup) {
+      console.log("Cleanup flag set. Cleaning up old binaries...");
+      await cleanDirectory(BINARY_DIR);
+      console.log("Cleanup completed.");
+    } else {
+      console.log("Skipping cleanup.");
+    }
+
+    const shouldDownload = await shouldDownloadBinaries();
+    if (!shouldDownload) {
       console.log(
         "src-tauri/binaries already has all HWI binaries. Skipping download.",
       );
@@ -282,8 +291,10 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${encodeURI(process.argv[1])}`) {
-  main().catch((error) => {
+if (import.meta.url.startsWith("file:")) {
+  const args = process.argv.slice(2);
+  const shouldCleanup = args.includes("--cleanup");
+  main(shouldCleanup).catch((error) => {
     console.error("An error occurred:", error);
     process.exit(1);
   });

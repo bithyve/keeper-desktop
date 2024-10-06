@@ -105,3 +105,12 @@ We use several tools to maintain code quality and consistency:
    You can find the CI configuration in `.github/workflows/ci.yml`.
 
 Before submitting a pull request, please ensure that your code passes all linting and formatting checks.
+
+## License
+
+This project is licensed under the **MIT License.**
+
+## Community
+
+- Follow us on [Twitter](https://twitter.com/bitcoinKeeper_)
+- Join our [Telegram](https://t.me/bitcoinkeeper)

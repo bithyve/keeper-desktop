@@ -1,13 +1,13 @@
 # Keeper Desktop
 
-Keeper Desktop is a a secure, cross-platform desktop app for using hardhaware wallets with the Bitcoin Keeper mobile app.
+Keeper Desktop is a a secure, cross-platform desktop app for using hardware wallets with the Bitcoin Keeper mobile app.
 
 ## Getting Started
 
 ### Prerequisites
 
 - Rust: Make sure you have Rust installed. If not, visit [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install) for installation instructions.
-- Node.js and npm: Ensure you have Node.js and npm installed. You can download them from [https://nodejs.org/](https://nodejs.org/).
+- Node.js and npm: Please ensure you have Node.js and npm installed. You can download them from [https://nodejs.org/](https://nodejs.org/).
 
 ### Installation
 

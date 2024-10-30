@@ -5,6 +5,7 @@ import {
   HWI_DEVICES,
   HWIDevice,
   HWIDeviceType,
+  NetworkType,
 } from "../../helpers/devices";
 import styles from "./DeviceActionModal.module.css";
 import baseStyles from "../BaseModal/BaseModal.module.css";
@@ -15,6 +16,7 @@ import { useDeviceActions } from "../../hooks/useDeviceActions";
 interface DeviceActionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  network: NetworkType | null;
   deviceType: HWIDeviceType;
   actionType: HWI_ACTION;
   psbt: string | null;
@@ -37,6 +39,7 @@ const actionTitle = (deviceType: HWIDeviceType) => ({
 const DeviceActionModal = ({
   isOpen,
   onClose,
+  network,
   deviceType,
   actionType,
   psbt,
@@ -47,6 +50,7 @@ const DeviceActionModal = ({
   onError,
 }: DeviceActionModalProps) => {
   const { isLoading, handleContinue } = useDeviceActions({
+    network,
     deviceType,
     actionType,
     psbt,

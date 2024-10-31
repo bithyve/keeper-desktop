@@ -37,7 +37,10 @@ const TrezorPinModal = ({
     setIsLoading(true);
     try {
       await hwiService.sendPin(pin);
-      const devices = await hwiService.fetchDevices("trezor");
+      const devices = await hwiService.fetchDevices(
+        "trezor",
+        network?.toLowerCase(),
+      );
       await hwiService.setHWIClient(
         devices[0].fingerprint,
         "trezor",

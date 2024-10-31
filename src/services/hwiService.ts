@@ -18,8 +18,14 @@ const emptyTrezorDevice: HWIDevice = {
 const hwiService = {
   fetchDevices: async (
     deviceType: HWIDeviceType | null = null,
+    network: string | null = null,
   ): Promise<HWIDevice[]> => {
-    const devices = await invoke<Result<HWIDevice>[]>("hwi_enumerate");
+    if (network === "mainnet") {
+      network = "bitcoin";
+    }
+    const devices = await invoke<Result<HWIDevice>[]>("hwi_enumerate", {
+      network,
+    });
     const updatedDevices = devices.map((device) =>
       device.Err && device.Err.includes("Trezor is locked")
         ? { Ok: emptyTrezorDevice }

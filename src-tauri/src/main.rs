@@ -11,7 +11,7 @@ use device::get_xpub;
 use hwi::error::Error;
 use hwi::implementations::binary_implementation::BinaryHWIImplementation;
 use hwi::interface::HWIClient;
-use hwi::types::{HWIBinaryExecutor, HWIDevice, HWIDeviceType};
+use hwi::types::{HWIBinaryExecutor, HWIChain, HWIDevice, HWIDeviceType};
 #[cfg(target_os = "linux")]
 use log::warn;
 use serde_json::{json, Value};
@@ -98,8 +98,11 @@ fn emit_to_channel(state: State<'_, AppState>, event_data: Value) -> Result<(), 
 // ==================== HWI Commands ====================
 
 #[tauri::command]
-async fn hwi_enumerate(_: State<'_, AppState>) -> Result<Vec<Result<HWIDevice, String>>, String> {
-    HWIAppClient::enumerate()
+async fn hwi_enumerate(
+    _: State<'_, AppState>,
+    network: Option<bitcoin::Network>,
+) -> Result<Vec<Result<HWIDevice, String>>, String> {
+    HWIAppClient::enumerate(network.map(HWIChain::from))
         .map(|devices| {
             devices
                 .into_iter()
@@ -312,7 +315,7 @@ pub struct HWIBinaryExecutorImpl;
 impl HWIBinaryExecutor for HWIBinaryExecutorImpl {
     fn execute_command(args: Vec<String>) -> Result<String, Error> {
         let mut args = args;
-        // TODO: Downgrade binaries to HWI 2.x and remove this flag
+
         args.insert(0, "--emulators".to_string());
 
         let output = Command::new_sidecar("hwi")

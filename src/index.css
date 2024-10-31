@@ -3,6 +3,43 @@ html {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: FiraSans, sans-serif;
+  font-family: Inter;
   background: linear-gradient(180deg, #2d6759 30%, #0f7a60 100%);
+}
+
+// App Font
+
+@font-face {
+  font-family: "Inter";
+  src: url("./assets/fonts/Inter/Inter-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("./assets/fonts/Inter/Inter-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("./assets/fonts/Inter/Inter-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("./assets/fonts/Inter/Inter-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("./assets/fonts/Inter/Inter-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
 }

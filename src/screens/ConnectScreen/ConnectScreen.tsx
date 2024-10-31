@@ -197,7 +197,7 @@ const ConnectScreen = () => {
           </button>
         </div>
         <p className={styles.qrNote}>
-          Make sure No one is around you when you scan this. You can always
+          Make sure no one is around you when you scan this. You can always
           refresh to get fresh key session.
         </p>
       </div>

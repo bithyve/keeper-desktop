@@ -1,8 +1,14 @@
 import { useState } from "react";
 import hwiService from "../services/hwiService";
-import { HWI_ACTION, HWIDevice, HWIDeviceType } from "../helpers/devices";
+import {
+  HWI_ACTION,
+  HWIDevice,
+  HWIDeviceType,
+  NetworkType,
+} from "../helpers/devices";
 
 interface UseDeviceActionsProps {
+  network: NetworkType | null;
   deviceType: HWIDeviceType;
   actionType: HWI_ACTION;
   psbt: string | null;
@@ -14,6 +20,7 @@ interface UseDeviceActionsProps {
 }
 
 export const useDeviceActions = ({
+  network,
   deviceType,
   actionType,
   psbt,
@@ -31,7 +38,10 @@ export const useDeviceActions = ({
     try {
       switch (actionType) {
         case "connect": {
-          const devices = await hwiService.fetchDevices(deviceType);
+          const devices = await hwiService.fetchDevices(
+            deviceType,
+            network?.toLowerCase(),
+          );
           await onConnectResult(devices);
           break;
         }

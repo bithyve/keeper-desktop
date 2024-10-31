@@ -277,7 +277,7 @@ pub enum HWIWordCount {
 }
 
 pub trait HWIImplementation {
-    fn enumerate() -> Result<String, Error>;
+    fn enumerate(chain: Option<HWIChain>) -> Result<String, Error>;
     fn get_client(device: &HWIDevice, expert: bool, chain: HWIChain) -> Result<Self, Error>
     where
         Self: Sized;

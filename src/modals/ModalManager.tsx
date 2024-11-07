@@ -54,6 +54,7 @@ const ModalsManager = ({
       <DeviceActionModal
         isOpen={openModal === "deviceAction"}
         onClose={closeModalHandler}
+        network={network}
         deviceType={deviceType as HWIDeviceType}
         actionType={currentAction}
         psbt={psbt}

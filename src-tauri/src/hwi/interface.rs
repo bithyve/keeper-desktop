@@ -33,7 +33,7 @@ impl<T: HWIImplementation> HWIClient<T> {
     /// # use hwi::implementations::python_implementation::PythonHWIImplementation;
     /// # use hwi::error::Error;
     /// # fn main() -> Result<(), Error> {
-    /// let devices = HWIClient::<PythonHWIImplementation>::enumerate()?;
+    /// let devices = HWIClient::<PythonHWIImplementation>::enumerate(None)?;
     /// for device in devices {
     ///     match device {
     ///         Ok(d) => println!("I can see a {} here 😄", d.model),
@@ -43,8 +43,8 @@ impl<T: HWIImplementation> HWIClient<T> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn enumerate() -> Result<Vec<Result<HWIDevice, Error>>, Error> {
-        let output = T::enumerate()?;
+    pub fn enumerate(chain: Option<HWIChain>) -> Result<Vec<Result<HWIDevice, Error>>, Error> {
+        let output = T::enumerate(chain)?;
         let devices_internal: Vec<HWIDeviceInternal> = deserialize_obj!(&output)?;
         Ok(devices_internal.into_iter().map(|d| d.try_into()).collect())
     }
@@ -59,7 +59,7 @@ impl<T: HWIImplementation> HWIClient<T> {
     /// # use hwi::error::Error;
     /// # use hwi::implementations::python_implementation::PythonHWIImplementation;
     /// # fn main() -> Result<(), Error> {
-    /// let devices = HWIClient::<PythonHWIImplementation>::enumerate()?;
+    /// let devices = HWIClient::<PythonHWIImplementation>::enumerate(None)?;
     /// for device in devices {
     ///     let device = device?;
     ///     let client = HWIClient::<PythonHWIImplementation>::get_client(

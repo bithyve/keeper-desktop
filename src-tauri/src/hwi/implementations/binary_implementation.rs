@@ -26,9 +26,13 @@ pub struct BinaryHWIImplementation<T: HWIBinaryExecutor> {
 }
 
 impl<T: HWIBinaryExecutor> HWIImplementation for BinaryHWIImplementation<T> {
-    fn enumerate() -> Result<String, Error> {
-        let output =
-            BinaryHWIImplementation::<T>::run_hwi_command(None, false, None, vec!["enumerate"])?;
+    fn enumerate(chain: Option<HWIChain>) -> Result<String, Error> {
+        let output = BinaryHWIImplementation::<T>::run_hwi_command(
+            None,
+            false,
+            chain.as_ref(),
+            vec!["enumerate"],
+        )?;
         Ok(output.to_string())
     }
 

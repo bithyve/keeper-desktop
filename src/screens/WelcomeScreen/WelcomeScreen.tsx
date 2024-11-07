@@ -91,7 +91,7 @@ const WelcomeScreen = () => {
         className={`${styles.content} ${contentVisible ? styles.contentVisible : ""}`}
       >
         <img src={keeperLogo} alt="Keeper Logo" className={styles.keeperLogo} />
-        <p className={styles.tagline}>Secure Today, Plan for Tomorrow</p>
+        <p className={styles.tagline}>Secure today, plan for tomorrow</p>
         <div className={styles.dynamicContent}>
           {(connectionState === "connecting" ||
             (connectionState === "failed" && showErrorToast)) && (

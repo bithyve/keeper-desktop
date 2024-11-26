@@ -10,7 +10,10 @@ pub enum ScriptType {
     P2TR,
 }
 
-pub fn get_xpubs(hwi_state: &HWIClientState, account: u32) -> Result<serde_json::Value, HWIError> {
+pub fn get_xpubs(
+    hwi_state: &HWIClientState,
+    account: usize,
+) -> Result<serde_json::Value, HWIError> {
     let ss_path = get_derivation_path(ScriptType::P2WPKH, hwi_state.network, account);
     let ms_path = get_derivation_path(ScriptType::P2WSH, hwi_state.network, account);
     let tr_path = get_derivation_path(ScriptType::P2TR, hwi_state.network, account);
@@ -37,14 +40,18 @@ pub fn get_xpubs(hwi_state: &HWIClientState, account: u32) -> Result<serde_json:
     }))
 }
 
-fn get_derivation_path(script_type: ScriptType, network: Network, account: u32) -> DerivationPath {
+fn get_derivation_path(
+    script_type: ScriptType,
+    network: Network,
+    account: usize,
+) -> DerivationPath {
     let network_num = match network {
         Network::Bitcoin => 0,
         Network::Testnet | Network::Signet | Network::Regtest => 1,
         _ => panic!("Unsupported Network"),
     };
     match script_type {
-        ScriptType::P2WPKH => format!("m/84'/{}'/{}'/", network_num, account)
+        ScriptType::P2WPKH => format!("m/84'/{}'/{}'", network_num, account)
             .parse()
             .unwrap(),
         ScriptType::P2WSH => format!("m/48'/{}'/{}'/2'", network_num, account)

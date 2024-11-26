@@ -138,7 +138,7 @@ fn set_hwi_client(
 }
 
 #[tauri::command]
-async fn hwi_get_xpubs(state: State<'_, AppState>, account: u32) -> Result<Value, String> {
+async fn hwi_get_xpubs(state: State<'_, AppState>, account: usize) -> Result<Value, String> {
     let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let xpub_data = get_xpubs(hwi_state, account).map_err(|e| e.to_string())?;
@@ -155,7 +155,7 @@ async fn hwi_get_xpubs(state: State<'_, AppState>, account: u32) -> Result<Value
 }
 
 #[tauri::command]
-async fn hwi_healthcheck(state: State<'_, AppState>, account: u32) -> Result<Value, String> {
+async fn hwi_healthcheck(state: State<'_, AppState>, account: usize) -> Result<Value, String> {
     let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
     let xpub_data = get_xpubs(hwi_state, account).map_err(|e| e.to_string())?;

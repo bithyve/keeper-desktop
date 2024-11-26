@@ -19,6 +19,7 @@ interface DeviceActionModalProps {
   network: NetworkType | null;
   deviceType: HWIDeviceType;
   actionType: HWI_ACTION;
+  accountNumber: number | null;
   psbt: string | null;
   descriptor: string | null;
   expectedAddress: string | null;
@@ -42,6 +43,7 @@ const DeviceActionModal = ({
   network,
   deviceType,
   actionType,
+  accountNumber,
   psbt,
   descriptor,
   expectedAddress,
@@ -53,6 +55,7 @@ const DeviceActionModal = ({
     network,
     deviceType,
     actionType,
+    accountNumber,
     psbt,
     descriptor,
     expectedAddress,

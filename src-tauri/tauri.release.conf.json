@@ -1,4 +1,14 @@
 {
+  "package": {
+    "productName": "Keeper Desktop"
+  },
+  "tauri": {
+    "windows": [
+      {
+        "title": "Keeper Desktop"
+      }
+    ]
+  },
   "build": {
     "features": ["release"]
   }

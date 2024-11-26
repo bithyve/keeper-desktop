@@ -7,7 +7,7 @@ mod hwi;
 use bitcoin::base64::{engine::general_purpose, Engine as _};
 use bitcoin::Address;
 use channel::Channel;
-use device::get_xpub;
+use device::get_xpubs;
 use hwi::error::Error;
 use hwi::implementations::binary_implementation::BinaryHWIImplementation;
 use hwi::interface::HWIClient;
@@ -138,10 +138,10 @@ fn set_hwi_client(
 }
 
 #[tauri::command]
-async fn hwi_get_xpubs(state: State<'_, AppState>) -> Result<Value, String> {
+async fn hwi_get_xpubs(state: State<'_, AppState>, account: u32) -> Result<Value, String> {
     let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let xpub_data = get_xpub(hwi_state).map_err(|e| e.to_string())?;
+    let xpub_data = get_xpubs(hwi_state, account).map_err(|e| e.to_string())?;
 
     Ok(json!({
         "event": "CHANNEL_MESSAGE",
@@ -155,10 +155,10 @@ async fn hwi_get_xpubs(state: State<'_, AppState>) -> Result<Value, String> {
 }
 
 #[tauri::command]
-async fn hwi_healthcheck(state: State<'_, AppState>) -> Result<Value, String> {
+async fn hwi_healthcheck(state: State<'_, AppState>, account: u32) -> Result<Value, String> {
     let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let xpub_data = get_xpub(hwi_state).map_err(|e| e.to_string())?;
+    let xpub_data = get_xpubs(hwi_state, account).map_err(|e| e.to_string())?;
 
     Ok(json!({
         "event": "CHANNEL_MESSAGE",

@@ -11,6 +11,7 @@ interface UseDeviceActionsProps {
   network: NetworkType | null;
   deviceType: HWIDeviceType;
   actionType: HWI_ACTION;
+  accountNumber: number | null;
   psbt: string | null;
   descriptor: string | null;
   expectedAddress: string | null;
@@ -23,6 +24,7 @@ export const useDeviceActions = ({
   network,
   deviceType,
   actionType,
+  accountNumber,
   psbt,
   descriptor,
   expectedAddress,
@@ -46,11 +48,11 @@ export const useDeviceActions = ({
           break;
         }
         case "shareXpubs":
-          await hwiService.shareXpubs();
+          await hwiService.shareXpubs(accountNumber ?? 0);
           onActionSuccess();
           break;
         case "healthCheck":
-          await hwiService.performHealthCheck();
+          await hwiService.performHealthCheck(accountNumber ?? 0);
           onActionSuccess();
           break;
         case "signTx":

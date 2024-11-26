@@ -53,13 +53,13 @@ const hwiService = {
     await invoke<void>("set_hwi_client", { fingerprint, deviceType, network });
   },
 
-  shareXpubs: async (): Promise<void> => {
-    const eventData = await invoke("hwi_get_xpubs");
+  shareXpubs: async (account: number): Promise<void> => {
+    const eventData = await invoke("hwi_get_xpubs", { account });
     await invoke("emit_to_channel", { eventData });
   },
 
-  performHealthCheck: async (): Promise<void> => {
-    const eventData = await invoke<void>("hwi_healthcheck");
+  performHealthCheck: async (account: number): Promise<void> => {
+    const eventData = await invoke<void>("hwi_healthcheck", { account });
     await invoke<void>("emit_to_channel", { eventData });
   },
 

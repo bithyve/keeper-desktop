@@ -9,9 +9,9 @@ pub enum ScriptType {
     P2WSH,
 }
 
-pub fn get_xpub(hwi_state: &HWIClientState) -> Result<serde_json::Value, HWIError> {
-    let ss_path = get_derivation_path(ScriptType::P2WPKH, hwi_state.network);
-    let ms_path = get_derivation_path(ScriptType::P2WSH, hwi_state.network);
+pub fn get_xpubs(hwi_state: &HWIClientState, account: u32) -> Result<serde_json::Value, HWIError> {
+    let ss_path = get_derivation_path(ScriptType::P2WPKH, hwi_state.network, account);
+    let ms_path = get_derivation_path(ScriptType::P2WSH, hwi_state.network, account);
 
     let single_sig_xpub = hwi_state.hwi.get_xpub(&ss_path, false)?;
     let multi_sig_xpub = hwi_state.hwi.get_xpub(&ms_path, false)?;
@@ -32,12 +32,18 @@ pub fn get_xpub(hwi_state: &HWIClientState) -> Result<serde_json::Value, HWIErro
     }))
 }
 
-fn get_derivation_path(script_type: ScriptType, network: Network) -> DerivationPath {
-    match (script_type, network) {
-        (ScriptType::P2WPKH, Network::Bitcoin) => "m/84'/0'/0'".parse().unwrap(),
-        (ScriptType::P2WPKH, Network::Testnet) => "m/84'/1'/0'".parse().unwrap(),
-        (ScriptType::P2WSH, Network::Bitcoin) => "m/48'/0'/0'/2'".parse().unwrap(),
-        (ScriptType::P2WSH, Network::Testnet) => "m/48'/1'/0'/2'".parse().unwrap(),
-        _ => panic!("Unsupported script type or network"),
+fn get_derivation_path(script_type: ScriptType, network: Network, account: u32) -> DerivationPath {
+    let network_num = match network {
+        Network::Bitcoin => 0,
+        Network::Testnet | Network::Signet | Network::Regtest => 1,
+        _ => panic!("Unsupported Network"),
+    };
+    match script_type {
+        ScriptType::P2WPKH => format!("m/84'/{}'/{}'/", network_num, account)
+            .parse()
+            .unwrap(),
+        ScriptType::P2WSH => format!("m/48'/{}'/{}'/2'", network_num, account)
+            .parse()
+            .unwrap(),
     }
 }

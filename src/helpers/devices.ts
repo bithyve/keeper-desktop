@@ -142,7 +142,7 @@ const deviceContent: Record<HWIDeviceType, DeviceContent> = {
     icon: bitboxIconModal,
     content: {
       connect: {
-        text: "Your mobile app is trying to connect to BitBox02. Please connect your BitBox02 to the computer and unlock it with your password to continue with Keeper Desktop app",
+        text: "Your mobile app is trying to connect to BitBox02. Please connect your BitBox02 to the computer to continue with Keeper Desktop app. If your device is locked you will need to unlock it after clicking Continue.",
         list: [],
       },
       shareXpubs: {

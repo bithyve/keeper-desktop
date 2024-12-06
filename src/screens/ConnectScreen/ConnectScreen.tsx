@@ -23,6 +23,7 @@ interface ChannelMessagePayload {
   data: {
     signerType: string;
     action: string;
+    accountNumber?: number;
     psbt?: { serializedPSBT: string };
     descriptorString?: string;
     firstExtAdd?: string;
@@ -38,6 +39,7 @@ const ConnectScreen = () => {
   const [currentAction, setCurrentAction] = useState<HWI_ACTION>("connect");
   const [actionType, setActionType] = useState<HWI_ACTION | null>(null);
   const [network, setNetwork] = useState<NetworkType | null>(null);
+  const [accountNumber, setAccountNumber] = useState<number | null>(null);
   const [psbt, setPsbt] = useState<string | null>(null);
   const [descriptor, setDescriptor] = useState<string | null>(null);
   const [expectedAddress, setExpectedAddress] = useState<string | null>(null);
@@ -92,9 +94,19 @@ const ConnectScreen = () => {
         setDeviceType(data.signerType.toLowerCase() as HWIDeviceType);
         switch (data.action) {
           case "ADD_DEVICE":
+            if (data.accountNumber) {
+              setAccountNumber(data.accountNumber);
+            } else {
+              setAccountNumber(0);
+            }
             setActionType("shareXpubs");
             break;
           case "HEALTH_CHECK":
+            if (data.accountNumber) {
+              setAccountNumber(data.accountNumber);
+            } else {
+              setAccountNumber(0);
+            }
             setActionType("healthCheck");
             break;
           case "SIGN_TX":
@@ -209,6 +221,7 @@ const ConnectScreen = () => {
           currentAction={currentAction}
           actionType={actionType}
           network={network}
+          accountNumber={accountNumber}
           psbt={psbt}
           descriptor={descriptor}
           expectedAddress={expectedAddress}

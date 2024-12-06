@@ -6,8 +6,8 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "Keeper Desktop",
-    "version": "0.1.3"
+    "productName": "Keeper Desktop (Dev)",
+    "version": "0.1.4"
   },
   "tauri": {
     "allowlist": {
@@ -27,7 +27,7 @@
     },
     "windows": [
       {
-        "title": "Keeper Desktop",
+        "title": "Keeper Desktop (Dev)",
         "width": 900,
         "height": 670,
         "resizable": false,

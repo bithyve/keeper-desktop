@@ -21,6 +21,7 @@ interface ModalsManagerProps {
   currentAction: HWI_ACTION;
   actionType: HWI_ACTION | null;
   network: NetworkType | null;
+  accountNumber: number | null;
   psbt: string | null;
   descriptor: string | null;
   expectedAddress: string | null;
@@ -39,6 +40,7 @@ const ModalsManager = ({
   currentAction,
   actionType,
   network,
+  accountNumber,
   psbt,
   descriptor,
   expectedAddress,
@@ -57,6 +59,7 @@ const ModalsManager = ({
         network={network}
         deviceType={deviceType as HWIDeviceType}
         actionType={currentAction}
+        accountNumber={accountNumber}
         psbt={psbt}
         descriptor={descriptor}
         expectedAddress={expectedAddress}

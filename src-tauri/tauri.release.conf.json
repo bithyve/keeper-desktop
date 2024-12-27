@@ -1,15 +1,68 @@
 {
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist",
+    "features": ["release"]
+  },
   "package": {
-    "productName": "Keeper Desktop"
+    "productName": "Keeper Desktop",
+    "version": "0.1.4"
   },
   "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "sidecar": true,
+        "scope": [
+          { "name": "binaries/hwi", "sidecar": true, "args": [
+              {
+                "validator": "\\S+"
+              }
+            ] }
+        ],
+        "all": false,
+        "open": true
+      }
+    },
     "windows": [
       {
-        "title": "Keeper Desktop"
+        "title": "Keeper Desktop",
+        "width": 900,
+        "height": 670,
+        "resizable": false,
+        "fullscreen": false
       }
-    ]
-  },
-  "build": {
-    "features": ["release"]
+    ],
+    "security": {
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: 'unsafe-inline'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; require-trusted-types-for 'script';"
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "com.keeper.desktop",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "externalBin": [
+        "binaries/hwi"
+      ],
+      "macOS": {
+        "entitlements": "entitlements.plist"
+      },
+      "windows": {
+        "certificateThumbprint": "C65BED6047BF3E1B42777C049CBC921F88E1B167",
+        "digestAlgorithm": "sha256",
+        "timestampUrl": "http://timestamp.comodoca.com",
+        "nsis": {
+          "installerIcon": "icons/icon.ico"
+        }
+      }
+    }
   }
 }

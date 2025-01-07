@@ -4,6 +4,8 @@
 mod channel;
 mod device;
 mod hwi;
+mod miniscript_hwi;
+use async_hwi::AddressScript;
 use bitcoin::base64::{engine::general_purpose, Engine as _};
 use bitcoin::Address;
 use channel::Channel;
@@ -14,6 +16,7 @@ use hwi::interface::HWIClient;
 use hwi::types::{HWIBinaryExecutor, HWIChain, HWIDevice, HWIDeviceType};
 #[cfg(target_os = "linux")]
 use log::warn;
+use miniscript_hwi::get_miniscript_device_by_fingerprint;
 use serde_json::{json, Value};
 #[cfg(target_os = "linux")]
 use std::path::Path;
@@ -172,13 +175,54 @@ async fn hwi_healthcheck(state: State<'_, AppState>, account: usize) -> Result<V
 }
 
 #[tauri::command]
-async fn hwi_sign_tx(state: State<'_, AppState>, psbt: String) -> Result<Value, String> {
+async fn hwi_sign_tx(
+    state: State<'_, AppState>,
+    psbt: String,
+    policy: Option<String>,
+    wallet_name: Option<String>,
+) -> Result<Value, String> {
     let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let signed_psbt = hwi_state
-        .hwi
-        .sign_tx(&bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?)
-        .map_err(|e| e.to_string())?;
+
+    let signed_psbt = if let Some(policy) = policy {
+        // Miniscript policy path
+        let device = get_miniscript_device_by_fingerprint(
+            hwi_state.network,
+            hwi_state.fingerprint.as_deref(),
+            &policy,
+            wallet_name.as_ref(),
+            None, // TODO: Add hmac when implementing Ledger
+        )
+        .await?;
+
+        let is_registered = device
+            .is_wallet_registered(&wallet_name.clone().unwrap_or_default(), &policy)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        if !is_registered {
+            device
+                .register_wallet(&wallet_name.ok_or("Wallet name not provided")?, &policy)
+                .await
+                .map_err(|e| e.to_string())?;
+        }
+
+        let mut psbt_obj = bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?;
+
+        device
+            .sign_tx(&mut psbt_obj)
+            .await
+            .map_err(|e| e.to_string())?;
+        psbt_obj.to_string()
+    } else {
+        general_purpose::STANDARD.encode(
+            hwi_state
+                .hwi
+                .sign_tx(&bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?)
+                .map_err(|e| e.to_string())?
+                .serialize(),
+        )
+    };
 
     Ok(json!({
         "event": "CHANNEL_MESSAGE",
@@ -186,7 +230,7 @@ async fn hwi_sign_tx(state: State<'_, AppState>, psbt: String) -> Result<Value, 
             "responseData": {
                 "action": "SIGN_TX",
                 "data": {
-                    "signedSerializedPSBT": general_purpose::STANDARD.encode(signed_psbt.serialize())
+                    "signedSerializedPSBT": signed_psbt
                 }
             }
         }
@@ -196,25 +240,54 @@ async fn hwi_sign_tx(state: State<'_, AppState>, psbt: String) -> Result<Value, 
 #[tauri::command]
 async fn hwi_register_multisig(
     state: State<'_, AppState>,
-    descriptor: String,
+    descriptor: Option<String>,
+    policy: Option<String>,
+    wallet_name: Option<String>,
     expected_address: String,
 ) -> Result<Value, String> {
     let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let address = hwi_state
-        .hwi
-        .display_address_with_desc(&descriptor)
-        .map_err(|e| e.to_string())?;
-    if address.address != Address::from_str(&expected_address).map_err(|e| e.to_string())? {
-        return Err("Address received from device does not match the expected address".to_string());
+
+    let mut final_address = expected_address.clone();
+
+    if let Some(descriptor) = descriptor {
+        // Descriptor path
+        let address = hwi_state
+            .hwi
+            .display_address_with_desc(&descriptor)
+            .map_err(|e| e.to_string())?;
+        if address.address != Address::from_str(&expected_address).map_err(|e| e.to_string())? {
+            return Err(
+                "Address received from device does not match the expected address".to_string(),
+            );
+        }
+        final_address = address.address.assume_checked().to_string().clone();
+    } else if let Some(policy) = policy {
+        // Miniscript policy path
+        let device = get_miniscript_device_by_fingerprint(
+            hwi_state.network,
+            hwi_state.fingerprint.as_deref(),
+            &policy,
+            wallet_name.as_ref(),
+            None, // TODO: Add hmac when implementing Ledger
+        )
+        .await?;
+
+        device
+            .register_wallet(&wallet_name.ok_or("Wallet name not provided")?, &policy)
+            .await
+            .map_err(|e| e.to_string())?;
+    } else {
+        return Err("Either descriptor or policy must be provided".to_string());
     }
+
     Ok(json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
             "responseData": {
                 "action": "REGISTER_MULTISIG",
                 "data": {
-                    "address": address.address
+                    "address": final_address
                 }
             }
         }
@@ -224,25 +297,73 @@ async fn hwi_register_multisig(
 #[tauri::command]
 async fn hwi_verify_address(
     state: State<'_, AppState>,
-    descriptor: String,
+    descriptor: Option<String>,
+    policy: Option<String>,
+    index: Option<usize>,
+    wallet_name: Option<String>,
     expected_address: String,
 ) -> Result<Value, String> {
     let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
-    let address = hwi_state
-        .hwi
-        .display_address_with_desc(&descriptor)
-        .map_err(|e| e.to_string())?;
-    if address.address != Address::from_str(&expected_address).map_err(|e| e.to_string())? {
-        return Err("Address received from device does not match the expected address".to_string());
+
+    let mut final_address = expected_address.clone();
+
+    if let Some(descriptor) = descriptor {
+        // Descriptor path
+        let address = hwi_state
+            .hwi
+            .display_address_with_desc(&descriptor)
+            .map_err(|e| e.to_string())?;
+        if address.address != Address::from_str(&expected_address).map_err(|e| e.to_string())? {
+            return Err(
+                "Address received from device does not match the expected address".to_string(),
+            );
+        }
+        final_address = address.address.assume_checked().to_string().clone();
+    } else if let Some(policy) = policy {
+        // Miniscript policy path
+        let device = get_miniscript_device_by_fingerprint(
+            hwi_state.network,
+            hwi_state.fingerprint.as_deref(),
+            &policy,
+            wallet_name.as_ref(),
+            None, // TODO: Add hmac when implementing Ledger
+        )
+        .await?;
+
+        let is_registered = device
+            .is_wallet_registered(&wallet_name.clone().unwrap_or_default(), &policy)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        if !is_registered {
+            device
+                .register_wallet(&wallet_name.ok_or("Wallet name not provided")?, &policy)
+                .await
+                .map_err(|e| e.to_string())?;
+        }
+
+        device
+            .display_address(&AddressScript::Miniscript {
+                index: index
+                    .ok_or("Index must be provided")?
+                    .try_into()
+                    .map_err(|_| "Index conversion failed".to_string())?,
+                change: false,
+            })
+            .await
+            .map_err(|e| e.to_string())?;
+    } else {
+        return Err("Either descriptor or policy must be provided".to_string());
     }
+
     Ok(json!({
         "event": "CHANNEL_MESSAGE",
         "data": {
             "responseData": {
                 "action": "VERIFY_ADDRESS",
                 "data": {
-                    "address": address.address
+                    "address": final_address
                 }
             }
         }

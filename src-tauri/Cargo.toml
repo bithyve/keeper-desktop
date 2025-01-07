@@ -23,7 +23,8 @@ hex = "0.4.3"
 log = "0.4"
 thiserror = "1.0"
 env_logger = "0.10"
-bitcoin = { version = "0.32.2", features = ["serde", "base64"] }
+bitcoin = { version = "0.31", features = ["serde", "base64"] }
+async-hwi = "0.0.25"
 
 [features]
 release = []

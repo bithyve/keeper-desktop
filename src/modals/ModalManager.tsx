@@ -24,6 +24,9 @@ interface ModalsManagerProps {
   accountNumber: number | null;
   psbt: string | null;
   descriptor: string | null;
+  miniscriptPolicy: string | null;
+  addressIndex: number | null;
+  walletName: string | null;
   expectedAddress: string | null;
   errorMessage: string;
   handleConnectResult: (devices: HWIDevice[]) => Promise<void>;
@@ -43,6 +46,9 @@ const ModalsManager = ({
   accountNumber,
   psbt,
   descriptor,
+  miniscriptPolicy,
+  addressIndex,
+  walletName,
   expectedAddress,
   errorMessage,
   handleConnectResult,
@@ -62,6 +68,9 @@ const ModalsManager = ({
         accountNumber={accountNumber}
         psbt={psbt}
         descriptor={descriptor}
+        miniscriptPolicy={miniscriptPolicy}
+        addressIndex={addressIndex}
+        walletName={walletName}
         expectedAddress={expectedAddress}
         onConnectResult={handleConnectResult}
         onActionSuccess={handleActionSuccess}

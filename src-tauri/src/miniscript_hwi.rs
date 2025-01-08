@@ -88,7 +88,7 @@ pub async fn list(
                 {
                     if let Ok((device, _)) = device.wait_confirm().await {
                         let mut bb02 = BitBox02::from(device).with_network(network);
-                        if let Some(ref policy) = wallet.as_ref().map(|w| w.policy).flatten() {
+                        if let Some(policy) = wallet.as_ref().and_then(|w| w.policy) {
                             bb02 = bb02.with_policy(policy)?;
                         }
                         hws.push(bb02.into());
@@ -154,8 +154,8 @@ pub async fn get_miniscript_device_by_fingerprint(
         network,
         Some(Wallet {
             name: wallet_name,
-            policy: Some(&policy),
-            hmac: hmac,
+            policy: Some(policy),
+            hmac,
         }),
     )
     .await

@@ -30,11 +30,11 @@ pub fn get_xpubs(
     }
 
     Ok(json!({
-        "singleSigPath": format!("m/{}", ss_path.to_string()),
+        "singleSigPath": ss_path.to_string(),
         "singleSigXpub": single_sig_xpub.to_string(),
-        "multiSigPath": format!("m/{}", ms_path.to_string()),
+        "multiSigPath": ms_path.to_string(),
         "multiSigXpub": multi_sig_xpub.to_string(),
-        "taprootPath": format!("m/{}", tr_path.to_string()),
+        "taprootPath": tr_path.to_string(),
         "taprootXpub": taproot_xpub.to_string(),
         "mfp": hwi_state.fingerprint.as_ref().unwrap().to_string().to_uppercase(),
     }))

@@ -31,23 +31,46 @@ pub async fn list(
         }
     }
 
-    match Jade::enumerate().await {
-        Err(e) => println!("{:?}", e),
-        Ok(devices) => {
-            for device in devices {
-                let device = device.with_network(network);
-                if let Ok(info) = device.get_info().await {
-                    if info.jade_state == jade::api::JadeState::Locked {
-                        if let Err(e) = device.auth().await {
-                            eprintln!("auth {:?}", e);
-                            continue;
+    match jade::SerialTransport::enumerate_potential_ports() {
+        Ok(ports) => {
+            for port in ports {
+                match jade::SerialTransport::new(port) {
+                    Ok(transport) => {
+                        let mut device = Jade::new(transport).with_network(network);
+                        if let Ok(info) = device.get_info().await {
+                            if info.jade_state == jade::api::JadeState::Locked {
+                                if let Err(e) = device.auth().await {
+                                    eprintln!("auth {:?}", e);
+                                    continue;
+                                }
+                            }
+
+                            // Check network compatibility
+                            if (network == Network::Bitcoin
+                                && info.jade_networks != jade::api::JadeNetworks::Main
+                                && info.jade_networks != jade::api::JadeNetworks::All)
+                                || (network != Network::Bitcoin
+                                    && info.jade_networks == jade::api::JadeNetworks::Main)
+                            {
+                                continue; // Skip incompatible network configurations
+                            }
+
+                            device = device.with_wallet(
+                                wallet
+                                    .as_ref()
+                                    .and_then(|w| w.name.as_ref())
+                                    .ok_or::<Box<dyn Error>>("jade requires a wallet name".into())?
+                                    .to_string(),
+                            );
+
+                            hws.push(device.into());
                         }
                     }
-
-                    hws.push(device.into());
+                    Err(e) => eprintln!("Failed to connect to Jade device: {:?}", e),
                 }
             }
         }
+        Err(e) => eprintln!("Error enumerating Jade devices: {:?}", e),
     }
 
     if let Ok(device) = LedgerSimulator::try_connect().await {

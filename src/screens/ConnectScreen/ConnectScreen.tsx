@@ -125,7 +125,7 @@ const ConnectScreen = () => {
             if (data.miniscriptPolicy) {
               setMiniscriptPolicy(data.miniscriptPolicy);
               if (data.walletName) {
-                setwalletName(data.walletName);
+                setwalletName(data.walletName.replace(/ /g, "-"));
               } else {
                 setwalletName("Vault");
               }
@@ -138,7 +138,7 @@ const ConnectScreen = () => {
             } else if (data.miniscriptPolicy) {
               setMiniscriptPolicy(data.miniscriptPolicy);
               if (data.walletName) {
-                setwalletName(data.walletName);
+                setwalletName(data.walletName.replace(/ /g, "-"));
               } else {
                 setwalletName("Vault");
               }
@@ -164,7 +164,7 @@ const ConnectScreen = () => {
               setMiniscriptPolicy(data.miniscriptPolicy);
               setAddressIndex(data.addressIndex);
               if (data.walletName) {
-                setwalletName(data.walletName);
+                setwalletName(data.walletName.replace(/ /g, "-"));
               } else {
                 setwalletName("Vault");
               }

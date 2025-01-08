@@ -17,6 +17,7 @@ interface UseDeviceActionsProps {
   miniscriptPolicy: string | null;
   addressIndex: number | null;
   walletName: string | null;
+  hmac: string | null;
   expectedAddress: string | null;
   onConnectResult: (devices: HWIDevice[]) => void;
   onActionSuccess: () => void;
@@ -33,6 +34,7 @@ export const useDeviceActions = ({
   miniscriptPolicy,
   addressIndex,
   walletName,
+  hmac,
   expectedAddress,
   onConnectResult,
   onActionSuccess,
@@ -66,7 +68,7 @@ export const useDeviceActions = ({
             onError("PSBT is required");
             return;
           }
-          await hwiService.signTx(psbt, miniscriptPolicy, walletName);
+          await hwiService.signTx(psbt, miniscriptPolicy, walletName, hmac);
           onActionSuccess();
           break;
         case "registerMultisig":
@@ -92,6 +94,7 @@ export const useDeviceActions = ({
             miniscriptPolicy,
             addressIndex,
             walletName,
+            hmac,
             expectedAddress ?? "",
           );
           onActionSuccess();

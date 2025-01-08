@@ -67,11 +67,13 @@ const hwiService = {
     psbt: string,
     policy: string | null,
     walletName: string | null,
+    hmac: string | null,
   ): Promise<void> => {
     const eventData = await invoke<void>("hwi_sign_tx", {
       psbt,
       policy,
       walletName,
+      hmac,
     });
     await invoke<void>("emit_to_channel", { eventData });
   },
@@ -96,6 +98,7 @@ const hwiService = {
     policy: string | null,
     index: number | null,
     walletName: string | null,
+    hmac: string | null,
     expectedAddress: string,
   ): Promise<void> => {
     const eventData = await invoke<void>("hwi_verify_address", {
@@ -103,6 +106,7 @@ const hwiService = {
       policy,
       index,
       walletName,
+      hmac,
       expectedAddress,
     });
     await invoke<void>("emit_to_channel", { eventData });

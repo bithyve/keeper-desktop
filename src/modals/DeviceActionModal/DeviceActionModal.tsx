@@ -25,6 +25,7 @@ interface DeviceActionModalProps {
   miniscriptPolicy: string | null;
   addressIndex: number | null;
   walletName: string | null;
+  hmac: string | null;
   expectedAddress: string | null;
   onConnectResult: (devices: HWIDevice[]) => void;
   onActionSuccess: () => void;
@@ -52,6 +53,7 @@ const DeviceActionModal = ({
   miniscriptPolicy,
   addressIndex,
   walletName,
+  hmac,
   expectedAddress,
   onConnectResult,
   onActionSuccess,
@@ -67,6 +69,7 @@ const DeviceActionModal = ({
     miniscriptPolicy,
     addressIndex,
     walletName,
+    hmac,
     expectedAddress,
     onConnectResult,
     onActionSuccess,

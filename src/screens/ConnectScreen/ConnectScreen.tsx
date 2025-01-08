@@ -29,6 +29,7 @@ interface ChannelMessagePayload {
     miniscriptPolicy?: string;
     addressIndex?: number;
     walletName?: string;
+    hmac?: string;
     firstExtAdd?: string;
     receivingAddress?: string;
   };
@@ -48,6 +49,7 @@ const ConnectScreen = () => {
   const [miniscriptPolicy, setMiniscriptPolicy] = useState<string | null>(null);
   const [addressIndex, setAddressIndex] = useState<number | null>(null);
   const [walletName, setwalletName] = useState<string | null>(null);
+  const [hmac, setHmac] = useState<string | null>(null);
   const [expectedAddress, setExpectedAddress] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -130,6 +132,9 @@ const ConnectScreen = () => {
                 setwalletName("Vault");
               }
             }
+            if (data.hmac) {
+              setHmac(data.hmac);
+            }
             break;
           case "REGISTER_MULTISIG":
             setActionType("registerMultisig");
@@ -170,6 +175,9 @@ const ConnectScreen = () => {
               }
             } else {
               handleError("Descriptor or Miniscript policy is required");
+            }
+            if (data.hmac) {
+              setHmac(data.hmac);
             }
             if (data.receivingAddress) {
               setExpectedAddress(data.receivingAddress);
@@ -261,6 +269,7 @@ const ConnectScreen = () => {
           miniscriptPolicy={miniscriptPolicy}
           addressIndex={addressIndex}
           walletName={walletName}
+          hmac={hmac}
           expectedAddress={expectedAddress}
           errorMessage={errorMessage}
           handleConnectResult={handleConnectResult}

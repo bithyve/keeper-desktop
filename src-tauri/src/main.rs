@@ -180,18 +180,21 @@ async fn hwi_sign_tx(
     psbt: String,
     policy: Option<String>,
     wallet_name: Option<String>,
+    hmac: Option<String>,
 ) -> Result<Value, String> {
     let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
 
+    let mut res_hmac = hmac.clone();
+
     let signed_psbt = if let Some(policy) = policy {
         // Miniscript policy path
-        let device = get_miniscript_device_by_fingerprint(
+        let mut device = get_miniscript_device_by_fingerprint(
             hwi_state.network,
             hwi_state.fingerprint.as_deref(),
             &policy,
             wallet_name.as_ref(),
-            None, // TODO: Add hmac when implementing Ledger
+            hmac.as_ref(),
         )
         .await?;
 
@@ -201,10 +204,31 @@ async fn hwi_sign_tx(
             .map_err(|e| e.to_string())?;
 
         if !is_registered {
-            device
-                .register_wallet(&wallet_name.ok_or("Wallet name not provided")?, &policy)
-                .await
-                .map_err(|e| e.to_string())?;
+            res_hmac = Some(hex::encode(
+                device
+                    .register_wallet(
+                        &wallet_name.clone().ok_or("Wallet name not provided")?,
+                        &policy,
+                    )
+                    .await
+                    .map_err(|e| e.to_string())?
+                    .unwrap_or_default(),
+            ));
+
+            if res_hmac.is_some() && !res_hmac.clone().unwrap().is_empty() {
+                // Drop current device to free up the connection
+                drop(device);
+
+                // re-fetch the device with the new HMAC
+                device = get_miniscript_device_by_fingerprint(
+                    hwi_state.network,
+                    hwi_state.fingerprint.as_deref(),
+                    &policy,
+                    wallet_name.as_ref(),
+                    res_hmac.as_ref(),
+                )
+                .await?;
+            }
         }
 
         let mut psbt_obj = bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?;
@@ -230,7 +254,8 @@ async fn hwi_sign_tx(
             "responseData": {
                 "action": "SIGN_TX",
                 "data": {
-                    "signedSerializedPSBT": signed_psbt
+                    "signedSerializedPSBT": signed_psbt,
+                    "hmac": res_hmac
                 }
             }
         }
@@ -250,6 +275,8 @@ async fn hwi_register_multisig(
 
     let mut final_address = expected_address.clone();
 
+    let mut res_hmac: Option<String> = None;
+
     if let Some(descriptor) = descriptor {
         // Descriptor path
         let address = hwi_state
@@ -269,14 +296,17 @@ async fn hwi_register_multisig(
             hwi_state.fingerprint.as_deref(),
             &policy,
             wallet_name.as_ref(),
-            None, // TODO: Add hmac when implementing Ledger
+            None,
         )
         .await?;
 
-        device
-            .register_wallet(&wallet_name.ok_or("Wallet name not provided")?, &policy)
-            .await
-            .map_err(|e| e.to_string())?;
+        res_hmac = Some(hex::encode(
+            device
+                .register_wallet(&wallet_name.ok_or("Wallet name not provided")?, &policy)
+                .await
+                .map_err(|e| e.to_string())?
+                .unwrap_or_default(),
+        ));
     } else {
         return Err("Either descriptor or policy must be provided".to_string());
     }
@@ -287,7 +317,8 @@ async fn hwi_register_multisig(
             "responseData": {
                 "action": "REGISTER_MULTISIG",
                 "data": {
-                    "address": final_address
+                    "address": final_address,
+                    "hmac": res_hmac
                 }
             }
         }
@@ -301,12 +332,15 @@ async fn hwi_verify_address(
     policy: Option<String>,
     index: Option<usize>,
     wallet_name: Option<String>,
+    hmac: Option<String>,
     expected_address: String,
 ) -> Result<Value, String> {
     let state = state.lock().await;
     let hwi_state = state.hwi.as_ref().ok_or("HWI client not initialized")?;
 
     let mut final_address = expected_address.clone();
+
+    let mut res_hmac = hmac.clone();
 
     if let Some(descriptor) = descriptor {
         // Descriptor path
@@ -322,12 +356,12 @@ async fn hwi_verify_address(
         final_address = address.address.assume_checked().to_string().clone();
     } else if let Some(policy) = policy {
         // Miniscript policy path
-        let device = get_miniscript_device_by_fingerprint(
+        let mut device = get_miniscript_device_by_fingerprint(
             hwi_state.network,
             hwi_state.fingerprint.as_deref(),
             &policy,
             wallet_name.as_ref(),
-            None, // TODO: Add hmac when implementing Ledger
+            hmac.as_ref(),
         )
         .await?;
 
@@ -337,10 +371,31 @@ async fn hwi_verify_address(
             .map_err(|e| e.to_string())?;
 
         if !is_registered {
-            device
-                .register_wallet(&wallet_name.ok_or("Wallet name not provided")?, &policy)
-                .await
-                .map_err(|e| e.to_string())?;
+            res_hmac = Some(hex::encode(
+                device
+                    .register_wallet(
+                        &wallet_name.clone().ok_or("Wallet name not provided")?,
+                        &policy,
+                    )
+                    .await
+                    .map_err(|e| e.to_string())?
+                    .unwrap_or_default(),
+            ));
+
+            if res_hmac.is_some() && !res_hmac.clone().unwrap().is_empty() {
+                // Drop current device to free up the connection
+                drop(device);
+
+                // re-fetch the device with the new HMAC
+                device = get_miniscript_device_by_fingerprint(
+                    hwi_state.network,
+                    hwi_state.fingerprint.as_deref(),
+                    &policy,
+                    wallet_name.as_ref(),
+                    res_hmac.as_ref(),
+                )
+                .await?;
+            }
         }
 
         device
@@ -363,7 +418,8 @@ async fn hwi_verify_address(
             "responseData": {
                 "action": "VERIFY_ADDRESS",
                 "data": {
-                    "address": final_address
+                    "address": final_address,
+                    "hmac": res_hmac
                 }
             }
         }

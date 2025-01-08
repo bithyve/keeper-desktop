@@ -26,6 +26,10 @@ interface ChannelMessagePayload {
     accountNumber?: number;
     psbt?: { serializedPSBT: string };
     descriptorString?: string;
+    miniscriptPolicy?: string;
+    addressIndex?: number;
+    walletName?: string;
+    hmac?: string;
     firstExtAdd?: string;
     receivingAddress?: string;
   };
@@ -42,6 +46,10 @@ const ConnectScreen = () => {
   const [accountNumber, setAccountNumber] = useState<number | null>(null);
   const [psbt, setPsbt] = useState<string | null>(null);
   const [descriptor, setDescriptor] = useState<string | null>(null);
+  const [miniscriptPolicy, setMiniscriptPolicy] = useState<string | null>(null);
+  const [addressIndex, setAddressIndex] = useState<number | null>(null);
+  const [walletName, setwalletName] = useState<string | null>(null);
+  const [hmac, setHmac] = useState<string | null>(null);
   const [expectedAddress, setExpectedAddress] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -116,13 +124,33 @@ const ConnectScreen = () => {
             } else {
               handleError("PSBT was not provided");
             }
+            if (data.miniscriptPolicy) {
+              setMiniscriptPolicy(data.miniscriptPolicy);
+              if (data.walletName) {
+                setwalletName(data.walletName.replace(/ /g, "-"));
+              } else {
+                setwalletName("Vault");
+              }
+            }
+            if (data.hmac) {
+              setHmac(data.hmac);
+            }
             break;
           case "REGISTER_MULTISIG":
             setActionType("registerMultisig");
             if (data.descriptorString) {
               setDescriptor(data.descriptorString.replace(/\*\*/g, "0/0"));
+            } else if (data.miniscriptPolicy) {
+              setMiniscriptPolicy(data.miniscriptPolicy);
+              if (data.walletName) {
+                setwalletName(data.walletName.replace(/ /g, "-"));
+              } else {
+                setwalletName("Vault");
+              }
             } else {
-              handleError("Descriptor was not provided");
+              handleError(
+                "No descriptor or Miniscript policy was not provided",
+              );
             }
             if (data.firstExtAdd) {
               setExpectedAddress(data.firstExtAdd);
@@ -134,8 +162,22 @@ const ConnectScreen = () => {
             setActionType("verifyAddress");
             if (data.descriptorString) {
               setDescriptor(data.descriptorString);
+            } else if (
+              data.miniscriptPolicy &&
+              (data.addressIndex || data.addressIndex === 0)
+            ) {
+              setMiniscriptPolicy(data.miniscriptPolicy);
+              setAddressIndex(data.addressIndex);
+              if (data.walletName) {
+                setwalletName(data.walletName.replace(/ /g, "-"));
+              } else {
+                setwalletName("Vault");
+              }
             } else {
-              handleError("Descriptor is required");
+              handleError("Descriptor or Miniscript policy is required");
+            }
+            if (data.hmac) {
+              setHmac(data.hmac);
             }
             if (data.receivingAddress) {
               setExpectedAddress(data.receivingAddress);
@@ -224,6 +266,10 @@ const ConnectScreen = () => {
           accountNumber={accountNumber}
           psbt={psbt}
           descriptor={descriptor}
+          miniscriptPolicy={miniscriptPolicy}
+          addressIndex={addressIndex}
+          walletName={walletName}
+          hmac={hmac}
           expectedAddress={expectedAddress}
           errorMessage={errorMessage}
           handleConnectResult={handleConnectResult}

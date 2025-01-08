@@ -14,6 +14,10 @@ interface UseDeviceActionsProps {
   accountNumber: number | null;
   psbt: string | null;
   descriptor: string | null;
+  miniscriptPolicy: string | null;
+  addressIndex: number | null;
+  walletName: string | null;
+  hmac: string | null;
   expectedAddress: string | null;
   onConnectResult: (devices: HWIDevice[]) => void;
   onActionSuccess: () => void;
@@ -27,6 +31,10 @@ export const useDeviceActions = ({
   accountNumber,
   psbt,
   descriptor,
+  miniscriptPolicy,
+  addressIndex,
+  walletName,
+  hmac,
   expectedAddress,
   onConnectResult,
   onActionSuccess,
@@ -60,23 +68,35 @@ export const useDeviceActions = ({
             onError("PSBT is required");
             return;
           }
-          await hwiService.signTx(psbt);
+          await hwiService.signTx(psbt, miniscriptPolicy, walletName, hmac);
           onActionSuccess();
           break;
         case "registerMultisig":
-          if (!descriptor) {
-            onError("Descriptor is required");
+          if (!descriptor && !miniscriptPolicy) {
+            onError("Descriptor or miniscript policy is required");
             return;
           }
-          await hwiService.registerMultisig(descriptor, expectedAddress ?? "");
+          await hwiService.registerMultisig(
+            descriptor,
+            miniscriptPolicy,
+            walletName,
+            expectedAddress ?? "",
+          );
           onActionSuccess();
           break;
         case "verifyAddress":
-          if (!descriptor) {
-            onError("Descriptor is required");
+          if (!descriptor && (!miniscriptPolicy || addressIndex === null)) {
+            onError("Descriptor or miniscript policy and index are required");
             return;
           }
-          await hwiService.verifyAddress(descriptor, expectedAddress ?? "");
+          await hwiService.verifyAddress(
+            descriptor,
+            miniscriptPolicy,
+            addressIndex,
+            walletName,
+            hmac,
+            expectedAddress ?? "",
+          );
           onActionSuccess();
           break;
         default:

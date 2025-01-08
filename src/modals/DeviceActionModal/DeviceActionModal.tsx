@@ -22,6 +22,10 @@ interface DeviceActionModalProps {
   accountNumber: number | null;
   psbt: string | null;
   descriptor: string | null;
+  miniscriptPolicy: string | null;
+  addressIndex: number | null;
+  walletName: string | null;
+  hmac: string | null;
   expectedAddress: string | null;
   onConnectResult: (devices: HWIDevice[]) => void;
   onActionSuccess: () => void;
@@ -46,6 +50,10 @@ const DeviceActionModal = ({
   accountNumber,
   psbt,
   descriptor,
+  miniscriptPolicy,
+  addressIndex,
+  walletName,
+  hmac,
   expectedAddress,
   onConnectResult,
   onActionSuccess,
@@ -58,6 +66,10 @@ const DeviceActionModal = ({
     accountNumber,
     psbt,
     descriptor,
+    miniscriptPolicy,
+    addressIndex,
+    walletName,
+    hmac,
     expectedAddress,
     onConnectResult,
     onActionSuccess,

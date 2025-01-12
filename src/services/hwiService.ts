@@ -23,9 +23,12 @@ const hwiService = {
     if (network === "mainnet") {
       network = "bitcoin";
     }
-    const devices = await invoke<Result<HWIDevice>[]>("hwi_enumerate", {
-      network,
-    });
+    const devices = await invoke<Result<HWIDevice>[]>(
+      deviceType === "bitbox02" ? "async_hwi_enumerate" : "hwi_enumerate",
+      {
+        network,
+      },
+    );
     const updatedDevices = devices.map((device) =>
       device.Err && device.Err.includes("Trezor is locked")
         ? { Ok: emptyTrezorDevice }

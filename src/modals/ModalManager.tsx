@@ -29,6 +29,7 @@ interface ModalsManagerProps {
   walletName: string | null;
   hmac: string | null;
   expectedAddress: string | null;
+  pairingCode: string | null;
   errorMessage: string;
   handleConnectResult: (devices: HWIDevice[]) => Promise<void>;
   handleActionSuccess: () => void;
@@ -52,6 +53,7 @@ const ModalsManager = ({
   walletName,
   hmac,
   expectedAddress,
+  pairingCode,
   errorMessage,
   handleConnectResult,
   handleActionSuccess,
@@ -75,6 +77,7 @@ const ModalsManager = ({
         walletName={walletName}
         hmac={hmac}
         expectedAddress={expectedAddress}
+        pairingCode={pairingCode}
         onConnectResult={handleConnectResult}
         onActionSuccess={handleActionSuccess}
         onError={handleError}

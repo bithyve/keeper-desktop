@@ -52,8 +52,10 @@ const ConnectScreen = () => {
   const [hmac, setHmac] = useState<string | null>(null);
   const [expectedAddress, setExpectedAddress] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [pairingCode, setPairingCode] = useState<string | null>(null);
 
   const handleConnectResult = async (devices: HWIDevice[]) => {
+    setPairingCode(null);
     if (devices.length > 1) {
       openModalHandler("multipleDevices");
     } else if (devices.length === 0) {
@@ -81,6 +83,8 @@ const ConnectScreen = () => {
 
   const handleError = useCallback(
     (error: string) => {
+      setPairingCode(null);
+
       setErrorMessage(error);
       openModalHandler("error");
     },
@@ -199,6 +203,21 @@ const ConnectScreen = () => {
     };
   }, [openModalHandler, handleError]);
 
+  useEffect(() => {
+    const unsubscribe = listen(
+      "bitbox-pairing-code",
+      (event: { payload: string }) => {
+        if (event.payload) {
+          setPairingCode(event.payload);
+        }
+      },
+    );
+
+    return () => {
+      unsubscribe.then((f) => f());
+    };
+  }, [openModalHandler]);
+
   return (
     <div className={styles.connectScreen}>
       <div className={styles.leftSection}>
@@ -277,6 +296,7 @@ const ConnectScreen = () => {
           handleError={handleError}
           setCurrentAction={setCurrentAction}
           openModalHandler={openModalHandler}
+          pairingCode={pairingCode}
         />
       )}
       <div className={styles.versionTag}>Version {version}</div>

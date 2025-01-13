@@ -16,7 +16,7 @@ use hwi::interface::HWIClient;
 use hwi::types::{HWIBinaryExecutor, HWIChain, HWIDevice, HWIDeviceType};
 #[cfg(target_os = "linux")]
 use log::warn;
-use miniscript_hwi::get_miniscript_device_by_fingerprint;
+use miniscript_hwi::{get_miniscript_device_by_fingerprint, list_devices, Wallet};
 use serde_json::{json, Value};
 #[cfg(target_os = "linux")]
 use std::path::Path;
@@ -113,6 +113,43 @@ async fn hwi_enumerate(
                 .collect()
         })
         .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn async_hwi_enumerate(
+    app_handle: tauri::AppHandle,
+    _: State<'_, AppState>,
+    network: Option<bitcoin::Network>,
+) -> Result<Vec<Result<HWIDevice, String>>, String> {
+    let devices = list_devices(
+        network.unwrap_or(bitcoin::Network::Bitcoin),
+        Some(Wallet {
+            name: None,
+            policy: None,
+            hmac: None,
+        }),
+        Some(app_handle),
+    )
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let mut hwi_devices = Vec::new();
+    for device in devices {
+        let fingerprint = device
+            .get_master_fingerprint()
+            .await
+            .map_err(|e| e.to_string())?;
+        hwi_devices.push(Ok(HWIDevice {
+            device_type: HWIDeviceType::from(device.device_kind().to_string().as_str()),
+            model: "".to_string(),
+            path: "".to_string(),
+            needs_pin_sent: false,
+            needs_passphrase_sent: false,
+            fingerprint: Some(fingerprint),
+        }));
+    }
+
+    Ok(hwi_devices)
 }
 
 #[tauri::command]
@@ -481,7 +518,8 @@ fn main() {
             hwi_verify_address,
             emit_to_channel,
             hwi_send_pin,
-            hwi_prompt_pin
+            hwi_prompt_pin,
+            async_hwi_enumerate,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

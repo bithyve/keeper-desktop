@@ -124,8 +124,8 @@ async fn async_hwi_enumerate(
     let devices = list_devices(
         network.unwrap_or(bitcoin::Network::Bitcoin),
         Some(Wallet {
-            name: None,
-            policy: None,
+            name: Some(&"none".to_string()), // Needed in case other devices which aren't the BB02 and require wallet name are connected
+            policy: Some(&"none".to_string()), // Needed in case other devices which aren't the BB02 and require wallet policy are connected
             hmac: None,
         }),
         Some(app_handle),

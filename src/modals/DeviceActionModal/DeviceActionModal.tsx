@@ -80,7 +80,6 @@ const DeviceActionModal = ({
   });
 
   const content = deviceContent[deviceType];
-  const hasListItems = content.content[actionType].list.length > 0;
   const isVerifyAddress = actionType === "verifyAddress";
   const iconSrc = isVerifyAddress ? verifyAddressIcon : content.icon;
 
@@ -88,6 +87,24 @@ const DeviceActionModal = ({
     const iconStyle = isVerifyAddress
       ? { width: "173px", height: "137px", marginBottom: "-20px" }
       : {};
+
+    const textContent =
+      miniscriptPolicy &&
+      deviceType === "coldcard" &&
+      actionType === "registerMultisig"
+        ? "Please approve the registration of the wallet on the connected Coldcard device"
+        : content.content[actionType].text;
+
+    const listContent =
+      miniscriptPolicy &&
+      deviceType === "coldcard" &&
+      actionType === "registerMultisig"
+        ? [
+            "Make sure to verify the public keys and wallet details shown on the Coldcard screen match the expected public keys of your cosigners and wallet details.",
+          ]
+        : content.content[actionType].list;
+
+    const hasListItems = listContent.length > 0;
 
     return {
       image: (
@@ -142,10 +159,10 @@ const DeviceActionModal = ({
               )}
             </div>
           ) : (
-            content.content[actionType].text
+            textContent
           )}
           <ul>
-            {content.content[actionType].list.map((item, index) => (
+            {listContent.map((item, index) => (
               <li key={index}>{item}</li>
             ))}
           </ul>
@@ -172,13 +189,13 @@ const DeviceActionModal = ({
   }, [
     deviceType,
     actionType,
-    hasListItems,
     pairingCode,
     isLoading,
     handleContinue,
     content,
     iconSrc,
     isVerifyAddress,
+    miniscriptPolicy,
   ]);
 
   return (

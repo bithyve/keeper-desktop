@@ -48,7 +48,7 @@ const ConnectScreen = () => {
   const [descriptor, setDescriptor] = useState<string | null>(null);
   const [miniscriptPolicy, setMiniscriptPolicy] = useState<string | null>(null);
   const [addressIndex, setAddressIndex] = useState<number | null>(null);
-  const [walletName, setwalletName] = useState<string | null>(null);
+  const [walletName, setWalletName] = useState<string | null>(null);
   const [hmac, setHmac] = useState<string | null>(null);
   const [expectedAddress, setExpectedAddress] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -102,6 +102,13 @@ const ConnectScreen = () => {
     const unsubscribe = listen(
       "channel-message",
       async (channelMessage: { payload: ChannelMessagePayload }) => {
+        setAccountNumber(null);
+        setDescriptor(null);
+        setExpectedAddress(null);
+        setHmac(null);
+        setMiniscriptPolicy(null);
+        setPsbt(null);
+        setWalletName(null);
         const { data, network } = channelMessage.payload;
         setDeviceType(data.signerType.toLowerCase() as HWIDeviceType);
         switch (data.action) {
@@ -131,9 +138,9 @@ const ConnectScreen = () => {
             if (data.miniscriptPolicy) {
               setMiniscriptPolicy(data.miniscriptPolicy);
               if (data.walletName) {
-                setwalletName(data.walletName.replace(/ /g, "-"));
+                setWalletName(data.walletName.replace(/ /g, "-"));
               } else {
-                setwalletName("Vault");
+                setWalletName("Vault");
               }
             }
             if (data.hmac) {
@@ -147,9 +154,9 @@ const ConnectScreen = () => {
             } else if (data.miniscriptPolicy) {
               setMiniscriptPolicy(data.miniscriptPolicy);
               if (data.walletName) {
-                setwalletName(data.walletName.replace(/ /g, "-"));
+                setWalletName(data.walletName.replace(/ /g, "-"));
               } else {
-                setwalletName("Vault");
+                setWalletName("Vault");
               }
             } else {
               handleError(
@@ -173,9 +180,9 @@ const ConnectScreen = () => {
               setMiniscriptPolicy(data.miniscriptPolicy);
               setAddressIndex(data.addressIndex);
               if (data.walletName) {
-                setwalletName(data.walletName.replace(/ /g, "-"));
+                setWalletName(data.walletName.replace(/ /g, "-"));
               } else {
-                setwalletName("Vault");
+                setWalletName("Vault");
               }
             } else {
               handleError("Descriptor or Miniscript policy is required");

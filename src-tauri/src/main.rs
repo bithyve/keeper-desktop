@@ -235,36 +235,38 @@ async fn hwi_sign_tx(
         )
         .await?;
 
-        let is_registered = device
-            .is_wallet_registered(&wallet_name.clone().unwrap_or_default(), &policy)
-            .await
-            .map_err(|e| e.to_string())?;
+        if hwi_state.device_type != HWIDeviceType::Coldcard {
+            let is_registered = device
+                .is_wallet_registered(&wallet_name.clone().unwrap_or_default(), &policy)
+                .await
+                .map_err(|e| e.to_string())?;
 
-        if !is_registered {
-            res_hmac = Some(hex::encode(
-                device
-                    .register_wallet(
-                        &wallet_name.clone().ok_or("Wallet name not provided")?,
+            if !is_registered {
+                res_hmac = Some(hex::encode(
+                    device
+                        .register_wallet(
+                            &wallet_name.clone().ok_or("Wallet name not provided")?,
+                            &policy,
+                        )
+                        .await
+                        .map_err(|e| e.to_string())?
+                        .unwrap_or_default(),
+                ));
+
+                if res_hmac.is_some() && !res_hmac.clone().unwrap().is_empty() {
+                    // Drop current device to free up the connection
+                    drop(device);
+
+                    // re-fetch the device with the new HMAC
+                    device = get_miniscript_device_by_fingerprint(
+                        hwi_state.network,
+                        hwi_state.fingerprint.as_deref(),
                         &policy,
+                        wallet_name.as_ref(),
+                        res_hmac.as_ref(),
                     )
-                    .await
-                    .map_err(|e| e.to_string())?
-                    .unwrap_or_default(),
-            ));
-
-            if res_hmac.is_some() && !res_hmac.clone().unwrap().is_empty() {
-                // Drop current device to free up the connection
-                drop(device);
-
-                // re-fetch the device with the new HMAC
-                device = get_miniscript_device_by_fingerprint(
-                    hwi_state.network,
-                    hwi_state.fingerprint.as_deref(),
-                    &policy,
-                    wallet_name.as_ref(),
-                    res_hmac.as_ref(),
-                )
-                .await?;
+                    .await?;
+                }
             }
         }
 
@@ -402,36 +404,38 @@ async fn hwi_verify_address(
         )
         .await?;
 
-        let is_registered = device
-            .is_wallet_registered(&wallet_name.clone().unwrap_or_default(), &policy)
-            .await
-            .map_err(|e| e.to_string())?;
+        if hwi_state.device_type != HWIDeviceType::Coldcard {
+            let is_registered = device
+                .is_wallet_registered(&wallet_name.clone().unwrap_or_default(), &policy)
+                .await
+                .map_err(|e| e.to_string())?;
 
-        if !is_registered {
-            res_hmac = Some(hex::encode(
-                device
-                    .register_wallet(
-                        &wallet_name.clone().ok_or("Wallet name not provided")?,
+            if !is_registered {
+                res_hmac = Some(hex::encode(
+                    device
+                        .register_wallet(
+                            &wallet_name.clone().ok_or("Wallet name not provided")?,
+                            &policy,
+                        )
+                        .await
+                        .map_err(|e| e.to_string())?
+                        .unwrap_or_default(),
+                ));
+
+                if res_hmac.is_some() && !res_hmac.clone().unwrap().is_empty() {
+                    // Drop current device to free up the connection
+                    drop(device);
+
+                    // re-fetch the device with the new HMAC
+                    device = get_miniscript_device_by_fingerprint(
+                        hwi_state.network,
+                        hwi_state.fingerprint.as_deref(),
                         &policy,
+                        wallet_name.as_ref(),
+                        res_hmac.as_ref(),
                     )
-                    .await
-                    .map_err(|e| e.to_string())?
-                    .unwrap_or_default(),
-            ));
-
-            if res_hmac.is_some() && !res_hmac.clone().unwrap().is_empty() {
-                // Drop current device to free up the connection
-                drop(device);
-
-                // re-fetch the device with the new HMAC
-                device = get_miniscript_device_by_fingerprint(
-                    hwi_state.network,
-                    hwi_state.fingerprint.as_deref(),
-                    &policy,
-                    wallet_name.as_ref(),
-                    res_hmac.as_ref(),
-                )
-                .await?;
+                    .await?;
+                }
             }
         }
 

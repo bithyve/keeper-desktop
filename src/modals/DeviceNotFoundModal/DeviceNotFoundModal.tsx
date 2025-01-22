@@ -19,7 +19,10 @@ const DeviceNotFoundModal = ({
 }: DeviceNotFoundModalProps) => {
   const getModalContent = () => ({
     title: `${HWI_DEVICES[deviceType].name} Not Found!`,
-    text: `Your ${HWI_DEVICES[deviceType].name} failed to make connection with Keeper desktop App. Please try again`,
+    text:
+      deviceType === "bitbox02"
+        ? `Your ${HWI_DEVICES[deviceType].name} failed to make connection with Keeper Desktop. Please make sure to close the BitBox app on your computer in case you have it open and try again`
+        : `Your ${HWI_DEVICES[deviceType].name} failed to make connection with Keeper Desktop. Please try again`,
   });
 
   const { title, text } = getModalContent();

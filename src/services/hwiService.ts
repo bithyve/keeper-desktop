@@ -23,9 +23,12 @@ const hwiService = {
     if (network === "mainnet") {
       network = "bitcoin";
     }
-    const devices = await invoke<Result<HWIDevice>[]>("hwi_enumerate", {
-      network,
-    });
+    const devices = await invoke<Result<HWIDevice>[]>(
+      deviceType === "bitbox02" ? "async_hwi_enumerate" : "hwi_enumerate",
+      {
+        network,
+      },
+    );
     const updatedDevices = devices.map((device) =>
       device.Err && device.Err.includes("Trezor is locked")
         ? { Ok: emptyTrezorDevice }
@@ -63,28 +66,50 @@ const hwiService = {
     await invoke<void>("emit_to_channel", { eventData });
   },
 
-  signTx: async (psbt: string): Promise<void> => {
-    const eventData = await invoke<void>("hwi_sign_tx", { psbt });
+  signTx: async (
+    psbt: string,
+    policy: string | null,
+    walletName: string | null,
+    hmac: string | null,
+  ): Promise<void> => {
+    const eventData = await invoke<void>("hwi_sign_tx", {
+      psbt,
+      policy,
+      walletName,
+      hmac,
+    });
     await invoke<void>("emit_to_channel", { eventData });
   },
 
   registerMultisig: async (
-    descriptor: string,
+    descriptor: string | null,
+    policy: string | null,
+    walletName: string | null,
     expectedAddress: string,
   ): Promise<void> => {
     const eventData = await invoke<void>("hwi_register_multisig", {
       descriptor,
+      policy,
+      walletName,
       expectedAddress,
     });
     await invoke<void>("emit_to_channel", { eventData });
   },
 
   verifyAddress: async (
-    descriptor: string,
+    descriptor: string | null,
+    policy: string | null,
+    index: number | null,
+    walletName: string | null,
+    hmac: string | null,
     expectedAddress: string,
   ): Promise<void> => {
     const eventData = await invoke<void>("hwi_verify_address", {
       descriptor,
+      policy,
+      index,
+      walletName,
+      hmac,
       expectedAddress,
     });
     await invoke<void>("emit_to_channel", { eventData });

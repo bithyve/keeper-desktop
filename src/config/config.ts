@@ -17,6 +17,7 @@ async function getConfig() {
 }
 
 const devConfig = {
+  relay: "https://bithyve-dev-relay.el.r.appspot.com",
   subscriptions: {
     btcPayUrl:
       "https://testnet.demo.btcpayserver.org/apps/QgBFbiANLMnEgbrAGBwMEYaaYFP/pos",
@@ -25,6 +26,7 @@ const devConfig = {
 };
 
 const prodConfig = {
+  relay: "",
   subscriptions: {
     btcPayUrl:
       "https://btcpay0.voltageapp.io/apps/3REVa49pm5EwCt6nArFztmHKzd7L/pos",

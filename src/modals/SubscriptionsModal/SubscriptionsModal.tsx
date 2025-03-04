@@ -5,6 +5,18 @@ import diamondIcon from "../../assets/diamond-hands-tier.svg";
 import tickIcon from "../../assets/tick-icon.svg";
 import closeIcon from "../../assets/close-btn.svg";
 import { WebviewWindow } from "@tauri-apps/api/window";
+import { useEffect, useState } from "react";
+
+interface Subscription {
+  name: string;
+  level: number;
+  icon: string;
+  isActive: boolean;
+  benefits: string[];
+  subTitle: string;
+  productId: string;
+  price: number;
+}
 
 interface SubscriptionsModalProps {
   isOpen: boolean;
@@ -17,7 +29,31 @@ const SubscriptionsModal = ({
   onClose,
   data,
 }: SubscriptionsModalProps) => {
-  if (!isOpen) return null;
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function fetchSubscriptions() {
+      try {
+        const config = await getConfig();
+        const response = await fetch(`${config.relay}/getSubscriptionsDesktop`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch subscriptions");
+        }
+        const data: Subscription[] = await response.json();
+        setSubscriptions(data);
+      } catch (error) {
+        console.error("Error fetching subscriptions:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (isOpen) {
+      setLoading(true);
+      fetchSubscriptions();
+    }
+  }, [isOpen]);
 
   const openExternalForm = async (productId: string) => {
     const config = await getConfig();
@@ -62,116 +98,51 @@ const SubscriptionsModal = ({
           Manage your subscription preferences and stay in control of your plan.
         </p>
 
-        <div className={styles.tiersContainer}>
-          {/* Hodler Tier */}
-          <div className={styles.tierCard}>
-            <div className={styles.tierHeader}>
-              <img
-                src={hodlerIcon}
-                alt="Hodler tier icon"
-                className={styles.tierIcon}
-              />
-              <div>
-                <h2 className={styles.tierTitle}>
-                  Hodler <span>(Intermediate)</span>
-                </h2>
-              </div>
-            </div>
+        {loading ? (
+          <div className={styles.loader}></div>
+        ) : (
+          <div className={styles.tiersContainer}>
+            {subscriptions.map((subscription) => (
+              <div key={subscription.productId} className={styles.tierCard}>
+                <div className={styles.tierHeader}>
+                  <img
+                    src={subscription.level === 2 ? hodlerIcon : diamondIcon}
+                    alt={`${subscription.name} tier icon`}
+                    className={styles.tierIcon}
+                  />
+                  <div>
+                    <h2 className={styles.tierTitle}>
+                      {subscription.name} <span>({subscription.subTitle})</span>
+                    </h2>
+                  </div>
+                </div>
 
-            <div className={styles.features}>
-              <div className={styles.feature}>
-                <img src={tickIcon} alt="Check" />
-                <span>All features of Pleb +</span>
-              </div>
-              <div className={styles.feature}>
-                <img src={tickIcon} alt="Check" />
-                <span>
-                  Automatic encrypted backups of app data for easy recovery
-                </span>
-              </div>
-              <div className={styles.feature}>
-                <img src={tickIcon} alt="Check" />
-                <span>
-                  Server key assisted key for easy collaborative custody
-                </span>
-              </div>
-              <div className={styles.feature}>
-                <img src={tickIcon} alt="Check" />
-                <span>
-                  Save encrypted cloud backups to your iCloud or Google Drive
-                </span>
-              </div>
-              <div className={styles.feature}>
-                <img src={tickIcon} alt="Check" />
-                <span>
-                  Set up Canary Wallets to detect unauthorized key access
-                </span>
-              </div>
-            </div>
+                <div className={styles.features}>
+                  {subscription.benefits.map((benefit, index) => (
+                    <div key={index} className={styles.feature}>
+                      <img src={tickIcon} alt="Check" />
+                      <span>{benefit}</span>
+                    </div>
+                  ))}
+                </div>
 
-            <div className={styles.pricing}>
-              <span className={styles.price}>US$ 99.99/</span>
-              <span className={styles.period}>yearly</span>
-            </div>
+                <div className={styles.pricing}>
+                  <span className={styles.price}>
+                    US$ {subscription.price}/
+                  </span>
+                  <span className={styles.period}>yearly</span>
+                </div>
 
-            <button
-              onClick={() => openExternalForm("hodler.yearly")}
-              className={styles.getStartedButton}
-            >
-              Get Started
-            </button>
+                <button
+                  onClick={() => openExternalForm(subscription.productId)}
+                  className={styles.getStartedButton}
+                >
+                  Get Started
+                </button>
+              </div>
+            ))}
           </div>
-
-          {/* Diamond Hands Tier */}
-          <div className={styles.tierCard}>
-            <div className={styles.tierHeader}>
-              <img
-                src={diamondIcon}
-                alt="Diamond Hands tier icon"
-                className={styles.tierIcon}
-              />
-              <div>
-                <h2 className={styles.tierTitle}>
-                  Diamond Hands <span>(Advanced)</span>
-                </h2>
-              </div>
-            </div>
-
-            <div className={styles.features}>
-              <div className={styles.feature}>
-                <img src={tickIcon} alt="Check" />
-                <span>All features of Hodler +</span>
-              </div>
-              <div className={styles.feature}>
-                <img src={tickIcon} alt="Check" />
-                <span>
-                  Create Enhanced Wallet with special Inheritance and Emergency
-                  keys
-                </span>
-              </div>
-              <div className={styles.feature}>
-                <img src={tickIcon} alt="Check" />
-                <span>Inheritance Planning tools and documents</span>
-              </div>
-              <div className={styles.feature}>
-                <img src={tickIcon} alt="Check" />
-                <span>Onboarding call with our keeper Concierge team</span>
-              </div>
-            </div>
-
-            <div className={styles.pricing}>
-              <span className={styles.price}>US$ 199.99/</span>
-              <span className={styles.period}>yearly</span>
-            </div>
-
-            <button
-              onClick={() => openExternalForm("diamond_hands.yearly")}
-              className={styles.getStartedButton}
-            >
-              Get Started
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

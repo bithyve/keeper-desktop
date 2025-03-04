@@ -16,6 +16,7 @@ import {
   NetworkType,
 } from "../../helpers/devices";
 import ModalsManager from "../../modals/ModalManager";
+import SubscriptionsModal from "../../modals/SubscriptionsModal/SubscriptionsModal";
 import hwiService from "../../services/hwiService";
 import { version } from "../../../package.json";
 
@@ -32,6 +33,10 @@ interface ChannelMessagePayload {
     hmac?: string;
     firstExtAdd?: string;
     receivingAddress?: string;
+    // Subscription data
+    appId?: string;
+    roomId?: string;
+    orderId?: string;
   };
   network: string;
 }
@@ -53,6 +58,10 @@ const ConnectScreen = () => {
   const [expectedAddress, setExpectedAddress] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [pairingCode, setPairingCode] = useState<string | null>(null);
+
+  // Subscriptions state variables
+  const [isSubscriptionsModalOpen, setSubscriptionsModalOpen] = useState(false);
+  const [subscriptionsData, setSubscriptionsData] = useState({});
 
   const handleConnectResult = async (devices: HWIDevice[]) => {
     setPairingCode(null);
@@ -196,6 +205,14 @@ const ConnectScreen = () => {
               handleError("Expected address was not provided");
             }
             break;
+          case "PURCHASE_SUBS":
+            setSubscriptionsData({
+              appId: data.appId,
+              roomId: data.roomId,
+              orderId: data.orderId,
+            });
+            openSubscriptionsModal();
+            return;
           default:
             handleError("Unsupported action received");
         }
@@ -224,6 +241,14 @@ const ConnectScreen = () => {
       unsubscribe.then((f) => f());
     };
   }, [openModalHandler]);
+
+  const openSubscriptionsModal = () => {
+    setSubscriptionsModalOpen(true);
+  };
+
+  const closeSubscriptionsModal = () => {
+    setSubscriptionsModalOpen(false);
+  };
 
   return (
     <div className={styles.connectScreen}>
@@ -307,6 +332,11 @@ const ConnectScreen = () => {
         />
       )}
       <div className={styles.versionTag}>Version {version}</div>
+      <SubscriptionsModal
+        isOpen={isSubscriptionsModalOpen}
+        onClose={closeSubscriptionsModal}
+        data={subscriptionsData}
+      />
     </div>
   );
 };

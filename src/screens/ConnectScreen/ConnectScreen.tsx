@@ -36,7 +36,6 @@ interface ChannelMessagePayload {
     // Subscription data
     appId?: string;
     roomId?: string;
-    orderId?: string;
   };
   network: string;
 }
@@ -119,7 +118,6 @@ const ConnectScreen = () => {
         setPsbt(null);
         setWalletName(null);
         const { data, network } = channelMessage.payload;
-        setDeviceType(data.signerType.toLowerCase() as HWIDeviceType);
         switch (data.action) {
           case "ADD_DEVICE":
             if (data.accountNumber) {
@@ -209,13 +207,13 @@ const ConnectScreen = () => {
             setSubscriptionsData({
               appId: data.appId,
               roomId: data.roomId,
-              orderId: data.orderId,
             });
             openSubscriptionsModal();
             return;
           default:
             handleError("Unsupported action received");
         }
+        setDeviceType(data.signerType.toLowerCase() as HWIDeviceType);
         setNetwork(network as NetworkType);
         setCurrentAction("connect");
         openModalHandler("deviceAction");

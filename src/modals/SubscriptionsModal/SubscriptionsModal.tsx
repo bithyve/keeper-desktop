@@ -1,4 +1,4 @@
-import config from "../../config/config";
+import { getConfig } from "../../config/config";
 import styles from "./SubscriptionsModal.module.css";
 import hodlerIcon from "../../assets/hodler-tier.svg";
 import diamondIcon from "../../assets/diamond-hands-tier.svg";
@@ -9,7 +9,7 @@ import { WebviewWindow } from "@tauri-apps/api/window";
 interface SubscriptionsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  data: { appId?: string; roomId?: string; orderId?: string };
+  data: { appId?: string; roomId?: string };
 }
 
 const SubscriptionsModal = ({
@@ -19,14 +19,15 @@ const SubscriptionsModal = ({
 }: SubscriptionsModalProps) => {
   if (!isOpen) return null;
 
-  const openExternalForm = (productId: string) => {
+  const openExternalForm = async (productId: string) => {
+    const config = await getConfig();
     const posData = JSON.stringify({
       ...data,
       action: "PURCHASE_SUBS",
       productId,
     });
 
-    const url = `btcpay.html?action=${encodeURIComponent(config.subscriptions.btcPayUrl)}&posData=${encodeURIComponent(posData)}&orderId=${encodeURIComponent(data.orderId || "id")}&notificationUrl=${encodeURIComponent(config.subscriptions.notificationUrl)}&choiceKey=${productId}`;
+    const url = `btcpay.html?action=${encodeURIComponent(config.subscriptions.btcPayUrl)}&posData=${encodeURIComponent(posData)}&notificationUrl=${encodeURIComponent(config.subscriptions.notificationUrl)}&choiceKey=${productId}`;
 
     const webview = new WebviewWindow("btcpayWindow", {
       url,

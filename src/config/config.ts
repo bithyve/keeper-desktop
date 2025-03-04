@@ -19,7 +19,7 @@ async function getConfig() {
 const devConfig = {
   subscriptions: {
     btcPayUrl:
-      "https://btcpay0.voltageapp.io/apps/3REVa49pm5EwCt6nArFztmHKzd7L/pos",
+      "https://testnet.demo.btcpayserver.org/apps/QgBFbiANLMnEgbrAGBwMEYaaYFP/pos",
     notificationUrl: "https://3s8w8vjf-3000.inc1.devtunnels.ms/btcPayServer",
   },
 };
@@ -32,6 +32,5 @@ const prodConfig = {
   },
 };
 
-const config = await getConfig();
-
-export default config;
+// Export a promise that resolves to the configuration
+export { getConfig };

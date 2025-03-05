@@ -25,7 +25,7 @@ const devConfig = {
 };
 
 const prodConfig = {
-  relay: "",
+  relay: "https://keeper-relay.uc.r.appspot.com",
   subscriptions: {
     btcPayUrl:
       "https://btcpay0.voltageapp.io/apps/3REVa49pm5EwCt6nArFztmHKzd7L/pos",

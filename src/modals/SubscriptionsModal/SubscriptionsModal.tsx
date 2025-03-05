@@ -29,6 +29,8 @@ const SubscriptionsModal = ({
   onClose,
   data,
 }: SubscriptionsModalProps) => {
+  if (!isOpen) return null;
+
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -63,7 +65,7 @@ const SubscriptionsModal = ({
       productId,
     });
 
-    const url = `btcpay.html?action=${encodeURIComponent(config.subscriptions.btcPayUrl)}&posData=${encodeURIComponent(posData)}&notificationUrl=${encodeURIComponent(config.subscriptions.notificationUrl)}&choiceKey=${productId}`;
+    const url = `btcpay.html?action=${encodeURIComponent(config.subscriptions.btcPayUrl)}&posData=${encodeURIComponent(posData)}&choiceKey=${productId}`;
 
     const webview = new WebviewWindow("btcpayWindow", {
       url,

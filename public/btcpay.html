@@ -32,7 +32,6 @@
   <div class="loader" id="loader"></div>
   <form id="btcpayForm" method="POST" action="" style="display: none;">
     <input type="hidden" name="posData" id="posData" value="">
-    <input type="hidden" name="notificationUrl" id="notificationUrl" value="">
     <input type="hidden" name="choiceKey" id="choiceKey" value="">
   </form>
   <script>
@@ -40,12 +39,10 @@
       const urlParams = new URLSearchParams(window.location.search);
       const action = urlParams.get('action');
       const posData = urlParams.get('posData');
-      const notificationUrl = urlParams.get('notificationUrl');
       const choiceKey = urlParams.get('choiceKey');
 
       document.getElementById('btcpayForm').action = action;
       document.getElementById('posData').value = posData;
-      document.getElementById('notificationUrl').value = notificationUrl;
       document.getElementById('choiceKey').value = choiceKey;
 
       try {

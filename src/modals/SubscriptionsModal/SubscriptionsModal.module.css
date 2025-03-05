@@ -1,0 +1,185 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 32px;
+}
+
+.modalContent {
+  background: #f7f2ec;
+  padding: 32px 27px;
+  border-radius: 20px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  height: 98%;
+}
+
+.closeButton {
+  position: absolute;
+  top: 25px;
+  right: 30px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+/* Remove old unused styles */
+.subscriptionOptions,
+.option,
+.option img,
+.option h3,
+.option p,
+.option ul,
+.option li,
+.option li::before {
+  display: none;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #041513;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: #24312e;
+  margin-bottom: 15px;
+}
+
+.tiersContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.tierCard {
+  background: #fdf7f0;
+  border-radius: 15px;
+  padding: 20px;
+  border: 1px solid rgba(45, 103, 89, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.tierHeader {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(145, 120, 92, 0.2);
+}
+
+.tierIcon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.tierTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #3e524d;
+  margin-bottom: 20px;
+}
+
+.tierTitle span {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.features {
+  margin-bottom: 21px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eaeaea;
+  flex-grow: 1;
+}
+
+.feature {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.feature img {
+  width: 9px;
+  height: 9px;
+  margin-top: 6px;
+}
+
+.feature span {
+  font-size: 13px;
+  font-weight: 400;
+  color: #24312e;
+  line-height: 20px;
+}
+
+.pricing {
+  margin-bottom: 21px;
+}
+
+.price {
+  font-size: 22px;
+  font-weight: 800;
+  color: #2d6759;
+}
+
+.period {
+  color: #2d6759;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.getStartedButton {
+  width: 100%;
+  height: 40px;
+  background: transparent;
+  border: 1px solid #2d6759;
+  border-radius: 8px;
+  color: #2d6759;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.getStartedButton:hover {
+  background: rgb(231, 243, 236);
+}
+
+/* Update form styles to work with new design */
+form {
+  width: 100%;
+}
+
+.loader {
+  border: 8px solid #f3f3f3; /* Reduced border size for a smaller loader */
+  border-top: 8px solid #3498db; /* Adjusted color */
+  border-radius: 50%;
+  width: 60px; /* Smaller width */
+  height: 60px; /* Smaller height */
+  animation: spin 1s linear infinite; /* Faster spin */
+  position: absolute; /* Positioning for centering */
+  top: 50%; /* Center vertically */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Adjust for perfect centering */
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

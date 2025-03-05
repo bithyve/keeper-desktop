@@ -29,8 +29,6 @@ const SubscriptionsModal = ({
   onClose,
   data,
 }: SubscriptionsModalProps) => {
-  if (!isOpen) return null;
-
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -85,6 +83,8 @@ const SubscriptionsModal = ({
       console.error("Error creating webview window", e);
     });
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.modalOverlay}>

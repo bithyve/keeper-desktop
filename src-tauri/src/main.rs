@@ -41,6 +41,12 @@ pub struct AppStateInner {
     hwi: Option<HWIClientState>,
 }
 
+#[cfg(not(feature = "release"))]
+static ENV: &str = "dev";
+
+#[cfg(feature = "release")]
+static ENV: &str = "prod";
+
 // ==================== Channel Commands ====================
 
 #[tauri::command]
@@ -487,6 +493,11 @@ fn check_udev_rules() -> Result<bool, String> {
     Ok(udev_file.exists())
 }
 
+#[tauri::command]
+fn get_environment() -> String {
+    ENV.into()
+}
+
 fn main() {
     env_logger::init();
     tauri::Builder::default()
@@ -524,6 +535,7 @@ fn main() {
             hwi_send_pin,
             hwi_prompt_pin,
             async_hwi_enumerate,
+            get_environment,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

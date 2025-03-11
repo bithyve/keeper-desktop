@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "Keeper Desktop (Dev)",
-    "version": "0.2.0"
+    "version": "0.2.1"
   },
   "tauri": {
     "allowlist": {
@@ -23,6 +23,9 @@
         ],
         "all": false,
         "open": true
+      },
+      "window": {
+        "create": true
       }
     },
     "windows": [
@@ -35,7 +38,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: 'unsafe-inline'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; require-trusted-types-for 'script';"
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://btcpay0.voltageapp.io https://testnet.demo.btcpayserver.org https://bithyve-dev-relay.el.r.appspot.com; object-src 'none'; base-uri 'self'; form-action 'self' https://btcpay0.voltageapp.io https://testnet.demo.btcpayserver.org; frame-ancestors 'self';"
     },
     "bundle": {
       "active": true,

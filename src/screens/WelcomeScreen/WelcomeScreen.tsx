@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { Link } from "react-router-dom";
-import keeperLogo from "../../assets/keeper-logo.png";
+import keeperLogo from "../../assets/keeper-logo.svg";
 import bithyveLogo from "../../assets/bithyve-logo.svg";
 import loader from "../../assets/loader.svg";
 import styles from "./WelcomeScreen.module.css";

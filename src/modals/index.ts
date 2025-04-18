@@ -4,3 +4,4 @@ export { default as DeviceNotFoundModal } from "./DeviceNotFoundModal/DeviceNotF
 export { default as MultipleDevicesModal } from "./MultipleDevicesModal/MultipleDevicesModal";
 export { default as ErrorModal } from "./ErrorModal/ErrorModal";
 export { default as TrezorPinModal } from "./TrezorPinModal/TrezorPinModal";
+export { default as SubscriptionsModal } from "./SubscriptionsModal/SubscriptionsModal";

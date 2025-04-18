@@ -9,15 +9,15 @@
   align-items: center;
   padding: 20px;
   box-sizing: border-box;
-  color: #fff6de;
-  background-color: #fdf7f0;
+  color: #f6f2ed;
+  background-color: #f9f4f0;
 }
 
 .circle {
   position: absolute;
   width: 100px;
   height: 100px;
-  background: linear-gradient(180deg, #2d6759 30%, #0f7a60 100%);
+  background: #2f4f4f;
   border-radius: 50%;
   transition:
     transform 2.5s ease-in-out,
@@ -34,7 +34,7 @@
   position: absolute;
   width: 100px;
   height: 100px;
-  background: linear-gradient(180deg, #2d6759 30%, #0f7a60 100%);
+  background: #2f4f4f;
   border-radius: 50%;
   animation: expand 2.5s ease-out forwards;
 }
@@ -76,13 +76,13 @@
   line-height: normal;
   margin-bottom: 30px;
   text-align: center;
-  color: #fff6de;
+  color: #f6f2ed;
 }
 
 .footer {
   position: absolute;
   bottom: 35px;
-  font-size: 16px;
+  font-size: 14px;
   text-align: center;
   font-weight: 300;
 }
@@ -92,7 +92,7 @@
 }
 
 .bithyveLogo {
-  height: 24px;
+  height: 19px;
   margin-right: 5px;
   vertical-align: middle;
   display: inline-block;
@@ -113,7 +113,7 @@
   border: none;
   border-radius: 10px;
   background: var(--Primary-Cream, #f7f2ec);
-  color: var(--Primary-Green, #2d6759);
+  color: var(--Primary-Green, #2f4f4f);
   text-align: center;
   font-size: 14px;
   font-style: normal;
@@ -125,7 +125,7 @@
 }
 
 .btn:hover {
-  background-color: #fdf7f0;
+  background-color: #f9f4f0;
   box-shadow: 0 2px 8px rgba(45, 103, 89, 0.2);
   transform: translateY(-2px);
   transition: all 0.3s ease;

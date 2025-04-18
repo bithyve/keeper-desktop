@@ -3,7 +3,7 @@
   min-height: 100vh;
   height: auto;
   display: flex;
-  color: #fdf7f0;
+  color: #f9f4f0;
   padding: 32px 54px;
   box-sizing: border-box;
   position: relative;
@@ -26,7 +26,7 @@
   margin-top: 38px;
   max-width: 345px;
   font-size: 25px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: normal;
   margin-bottom: 0px;
 }
@@ -38,7 +38,7 @@
 
 .instructionsTitle {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 400;
   display: flex;
   align-items: center;
   margin-bottom: 30px;
@@ -53,7 +53,7 @@
 .instructionsList {
   padding-left: 20px;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 20px;
 }
 
@@ -69,7 +69,7 @@
 
 .note h4 {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   margin-bottom: 0px;
 }
 
@@ -83,14 +83,14 @@
 
 .qrContainer {
   width: 45%;
-  background-color: #fdf7f0;
+  background-color: #f9f4f0;
   border-radius: 10px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #2d6759;
+  color: #2f4f4f;
   margin-top: 35px;
   margin-bottom: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -100,7 +100,7 @@
   position: relative;
   width: 250px;
   height: 250px;
-  background-color: #2d6759;
+  background-color: #2f4f4f;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -113,7 +113,7 @@
 .scanMe {
   font-size: 18px;
   font-weight: 600;
-  color: #fdf7f0;
+  color: #f9f4f0;
   margin-top: 22px;
   margin-bottom: 16px;
 }
@@ -174,9 +174,9 @@
 .versionTag {
   position: absolute;
   bottom: 15px;
-  left: 50%;
+  right: 0%;
   transform: translateX(-50%);
-  font-size: 13px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.6);
-  font-weight: 400;
+  font-weight: 300;
 }

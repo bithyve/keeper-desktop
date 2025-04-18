@@ -1,5 +1,5 @@
 import styles from "./ConnectScreen.module.css";
-import keeperLogo from "../../assets/keeper-with-slogan-logo.png";
+import keeperLogo from "../../assets/keeper-logo.svg";
 import instructionsIcon from "../../assets/instructions-icon.svg";
 import refreshIcon from "../../assets/refresh.svg";
 
@@ -288,7 +288,7 @@ const ConnectScreen = () => {
           <QRCode
             value={channelSecret ?? ""}
             size={200}
-            bgColor="#2d6759"
+            bgColor="#2f4f4f"
             fgColor="#fff"
           />
           <p className={styles.scanMe}>Scan Me</p>

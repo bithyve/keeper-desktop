@@ -241,6 +241,8 @@ async fn hwi_sign_tx(
         )
         .await?;
 
+        let mut psbt_obj = bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?;
+
         if hwi_state.device_type != HWIDeviceType::Coldcard {
             let is_registered = device
                 .is_wallet_registered(&wallet_name.clone().unwrap_or_default(), &policy)
@@ -274,9 +276,10 @@ async fn hwi_sign_tx(
                     .await?;
                 }
             }
+        } else {
+            // Coldcard change verification gives an error when xpubs are included for Miniscript scheme
+            psbt_obj.xpub.clear();
         }
-
-        let mut psbt_obj = bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?;
 
         device
             .sign_tx(&mut psbt_obj)

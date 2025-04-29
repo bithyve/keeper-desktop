@@ -145,7 +145,8 @@ impl<T: HWIImplementation> HWIClient<T> {
         path: &DerivationPath,
         expert: bool,
     ) -> Result<HWIExtendedPubKey, Error> {
-        let output = self.implementation.get_xpub(&path.to_string(), expert)?;
+        let prefixed_path = format!("m/{}", path);
+        let output = self.implementation.get_xpub(&prefixed_path, expert)?;
         deserialize_obj!(&output)
     }
 
@@ -155,9 +156,8 @@ impl<T: HWIImplementation> HWIClient<T> {
         message: &str,
         path: &DerivationPath,
     ) -> Result<HWISignature, Error> {
-        let output = self
-            .implementation
-            .sign_message(message, &path.to_string())?;
+        let prefixed_path = format!("m/{}", path);
+        let output = self.implementation.sign_message(message, &prefixed_path)?;
         deserialize_obj!(&output)
     }
 
@@ -183,7 +183,7 @@ impl<T: HWIImplementation> HWIClient<T> {
         start: u32,
         end: u32,
     ) -> Result<Vec<HWIKeyPoolElement>, Error> {
-        let path_str = path.map(|p| p.to_string());
+        let path_str = path.map(|p| format!("m/{}/*", p));
         let output = self.implementation.get_keypool(
             keypool,
             internal,
@@ -222,9 +222,10 @@ impl<T: HWIImplementation> HWIClient<T> {
         path: &DerivationPath,
         address_type: HWIAddressType,
     ) -> Result<HWIAddress, Error> {
+        let prefixed_path = format!("m/{}", path);
         let output = self
             .implementation
-            .display_address_with_path(&path.to_string(), address_type)?;
+            .display_address_with_path(&prefixed_path, address_type)?;
         deserialize_obj!(&output)
     }
 

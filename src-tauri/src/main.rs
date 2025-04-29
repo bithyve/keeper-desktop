@@ -41,6 +41,12 @@ pub struct AppStateInner {
     hwi: Option<HWIClientState>,
 }
 
+#[cfg(not(feature = "release"))]
+static ENV: &str = "dev";
+
+#[cfg(feature = "release")]
+static ENV: &str = "prod";
+
 // ==================== Channel Commands ====================
 
 #[tauri::command]
@@ -235,6 +241,8 @@ async fn hwi_sign_tx(
         )
         .await?;
 
+        let mut psbt_obj = bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?;
+
         if hwi_state.device_type != HWIDeviceType::Coldcard {
             let is_registered = device
                 .is_wallet_registered(&wallet_name.clone().unwrap_or_default(), &policy)
@@ -268,9 +276,10 @@ async fn hwi_sign_tx(
                     .await?;
                 }
             }
+        } else {
+            // Coldcard change verification gives an error when xpubs are included for Miniscript scheme
+            psbt_obj.xpub.clear();
         }
-
-        let mut psbt_obj = bitcoin::Psbt::from_str(&psbt).map_err(|e| e.to_string())?;
 
         device
             .sign_tx(&mut psbt_obj)
@@ -487,6 +496,11 @@ fn check_udev_rules() -> Result<bool, String> {
     Ok(udev_file.exists())
 }
 
+#[tauri::command]
+fn get_environment() -> String {
+    ENV.into()
+}
+
 fn main() {
     env_logger::init();
     tauri::Builder::default()
@@ -524,6 +538,7 @@ fn main() {
             hwi_send_pin,
             hwi_prompt_pin,
             async_hwi_enumerate,
+            get_environment,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

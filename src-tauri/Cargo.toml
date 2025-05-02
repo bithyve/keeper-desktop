@@ -1,6 +1,6 @@
 [package]
 name = "keeper-desktop"
-version = "0.2.2"
+version = "0.2.3"
 description = "Bitcoin Keeper Desktop App"
 authors = ["Ben Kaufman"]
 repository = "https://github.com/bithyve/keeper-desktop"
@@ -23,8 +23,8 @@ hex = "0.4.3"
 log = "0.4"
 thiserror = "1.0"
 env_logger = "0.10"
-bitcoin = { version = "0.31", features = ["serde", "base64"] }
-async-hwi = "0.0.25"
+bitcoin = { version = "0.32", features = ["serde", "base64"] }
+async-hwi = "0.0.27"
 x25519-dalek = "2.0.1"
 
 [features]

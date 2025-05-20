@@ -14,10 +14,25 @@ interface ErrorModalProps {
 const ErrorModal = ({
   isOpen,
   onClose,
-  errorMessage,
+  errorMessage: originalErrorMessage,
   onRetry,
 }: ErrorModalProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  let errorMessage = originalErrorMessage;
+
+  if (
+    originalErrorMessage.includes(
+      "A multisig account configuration with this name already exists",
+    )
+  ) {
+    errorMessage =
+      "A wallet with this name already exists. Please rename your wallet on the Keeper app and try again.";
+  } else if (originalErrorMessage.includes("sign_tx canceled by user")) {
+    errorMessage =
+      "Your transaction was declined on the hardware device. Please retry if you declined unintentionally.";
+  }
+
   const shortMessage =
     errorMessage.length > 100
       ? errorMessage.slice(0, 100) + "..."

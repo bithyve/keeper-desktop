@@ -18,14 +18,14 @@ html {
 
 @font-face {
   font-family: "Inter";
-  src: url("./assets/fonts/Inter/Inter-SemiBold.ttf") format("truetype");
+  src: url("./assets/fonts/Lora/Lora-SemiBold.ttf") format("truetype");
   font-weight: 600;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Inter";
-  src: url("./assets/fonts/Inter/Inter-Medium.ttf") format("truetype");
+  src: url("./assets/fonts/Lora/Lora-Medium.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;
 }

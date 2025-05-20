@@ -253,7 +253,9 @@ const ConnectScreen = () => {
       <div className={styles.leftSection}>
         <img src={keeperLogo} alt="Keeper Logo" className={styles.keeperLogo} />
         <h1 className={styles.title}>
-          Welcome to Bitcoin Keeper&apos;s Desktop App
+          Welcome to Bitcoin
+          <br />
+          Keeper&apos;s Desktop App
         </h1>
         <div className={styles.instructionsContainer}>
           <h3 className={styles.instructionsTitle}>

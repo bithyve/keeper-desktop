@@ -40,7 +40,7 @@ const DeviceActionSuccessModal = ({
       case "shareXpubs":
         return {
           title: `Device Added`,
-          text: `Your ${deviceName} has successfully been added to Keeper App and is now available for use.`,
+          text: `You have added ${deviceName} successfully. It is available in the Keeper app to be used as a key.`,
         };
       case "healthCheck":
         return {

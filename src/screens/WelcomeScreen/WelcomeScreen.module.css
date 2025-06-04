@@ -100,7 +100,15 @@
   margin-bottom: 4px;
 }
 
+@font-face {
+  font-family: "InterLocal";
+  src: url("../../assets/fonts/Inter/Inter-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
 .hyve {
+  font-family: "InterLocal", sans-serif;
   font-weight: 700;
 }
 

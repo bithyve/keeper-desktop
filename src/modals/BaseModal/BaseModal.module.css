@@ -42,13 +42,14 @@
   font-size: 18px;
   color: #000;
   margin-bottom: 10px;
+  font-weight: 500;
 }
 
 .text {
-  font-size: 15px;
+  font-size: 14px;
   color: #3e524d;
   margin: 0 7%;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 20px;
 }
 
